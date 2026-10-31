@@ -108,7 +108,14 @@ const PEOPLE_DATA = {
       "Зверніть увагу на мереживну вставку на сукні Марії Петрової та розкішну мереживну пелерину на її доньці Ксенії Петрівні на знімку ~1908 року — це справжні зразки мережива роботи прапрапрабабусі Марії!"
     ],
     photo: "assets/images/maria_petrova_portrait.jpg?v=2",
-    docImage: "assets/images/petrov_oblazhevich_photos_combo.jpg"
+    docImage: "assets/docs/6_Foto_1908_Oblazhevich_Petrov_Ksenia_Maria.jpg",
+    extraDocs: [
+      {
+        img: "assets/docs/7_Foto_1934_Ded_Petrochka_Maria_Lorik_Daugavpils.jpg",
+        title: "Знімок у саду (~1933–1934 рр., м. Даугавпілс)",
+        desc: "Прапрапрабабуся Марія Петрова, Петро Петров («Дід Петрочка») у вишиванці та маленька правнучка Лорик (бабуся Лариса)."
+      }
+    ]
   },
 
   pyotr: {
@@ -129,7 +136,14 @@ const PEOPLE_DATA = {
       "До якого приблизно року жили в Даугавпілсі Дід Петрочка (Петро Петров) та прапрапрабабуся Марія Петрова?"
     ],
     photo: "assets/images/pyotr_petrov_portrait.jpg?v=2",
-    docImage: "assets/images/petrov_oblazhevich_photos_combo.jpg"
+    docImage: "assets/docs/6_Foto_1908_Oblazhevich_Petrov_Ksenia_Maria.jpg",
+    extraDocs: [
+      {
+        img: "assets/docs/7_Foto_1934_Ded_Petrochka_Maria_Lorik_Daugavpils.jpg",
+        title: "Дід Петрочка у вишиванці з Марією Петровою та правнучкою Лорик (~1934 р.)",
+        desc: "Живий родинний знімок у саду в Даугавпілсі."
+      }
+    ]
   },
 
   kirill_sr: {
@@ -172,7 +186,7 @@ const PEOPLE_DATA = {
       "Зв'язатися з онукою Ніни Миколаївни — Діаною Геннадіївною Романович (Diāna Romanoviča) у Ризі, щоб дізнатися місце поховання Ксенії Петрівни та Ніни Миколаївни і побачити родинний фотоархів."
     ],
     photo: "assets/images/ksenia_petrova_portrait.jpg?v=2",
-    docImage: "assets/images/petrov_oblazhevich_photos_combo.jpg"
+    docImage: "assets/docs/6_Foto_1908_Oblazhevich_Petrov_Ksenia_Maria.jpg"
   },
 
   nikolay_blazhevich: {
@@ -188,12 +202,12 @@ const PEOPLE_DATA = {
     y: 410,
     generation: "V покоління • Прапрадід — Начальник поштового відділення!",
     name: "Микола Прокопович Облажевич (син Прокопія Облажевича)",
-    facts: "На фото ~1908 року сидить у центрі у форменому двобортному сюртуку класного чиновника Поштово-телеграфного відомства Російської імперії (з оксамитовими петлицями, срібним галуном та емблемою поштових ріжків зі стрілами-блискавками!) і тримає на колінах старшу доньку Женю (~1905–1906 р.н.). За Імператорським свідоцтвом № 11223 від 18.10.1916 р., у січні 1910 р. служив Начальником відділення поштової контори с. Яригіно Сичовського повіту Смоленської губернії.",
+    facts: "На фото ~1908 року сидить у центрі у форменому двобортному сюртуку класного чиновника Поштово-телеграфного відомства Російської імперії (з оксамитовими петлицями, срібним галуном та емблемою поштових ріжків зі стрілами-блискавками!) і тримає на колінах старшу донькою Женю (~1905–1906 р.н.). За Імператорським свідоцтвом № 11223 від 18.10.1916 р., у січні 1910 р. служив Начальником відділення поштової контори с. Яригіно Сичовського повіту Смоленської губернії.",
     questions: [
       "Як склалася доля самого Миколи Прокоповича Облажевича після 1910–1916 рр.?"
     ],
     photo: "assets/images/nikolay_oblazhevich_portrait.jpg?v=2",
-    docImage: "assets/images/petrov_oblazhevich_photos_combo.jpg"
+    docImage: "assets/docs/6_Foto_1908_Oblazhevich_Petrov_Ksenia_Maria.jpg"
   },
 
   roman_sr: {
@@ -278,7 +292,19 @@ const PEOPLE_DATA = {
       "У метричній книзі Двінського Олександро-Невського собору за 31 січня 1910 р. поруч із записом № 18 (Віра) обов'язково записане ім'я її брата-двійнятка!"
     ],
     photo: "assets/images/vera_1928_portrait.jpg?v=2",
-    docImage: "assets/images/vera_certs_combo.jpg"
+    docImage: "assets/docs/1_Svidetelstvo_1916_Vera_Oblazhevich_Dvinsk.jpg",
+    extraDocs: [
+      {
+        img: "assets/images/vera_1928_student_card_cropped.jpg",
+        title: "Учнівський квиток № 381 (07.09.1928, м. Даугавпілс)",
+        desc: "Посвідчення учениці випускного IV «а» класу Даугавпілської державної російської гімназії Віри Блажевич (Vera Blaževičs)."
+      },
+      {
+        img: "assets/docs/2_Svidetelstvo_1977_Vera_Oblazhevich_Daugavpils.jpg",
+        title: "Повторне свідоцтво про народження II-МЕ № 365363 (09.03.1977)",
+        desc: "Видане у м. Даугавпілсі на підставі запису № 18 від 13 лютого 1910 р. по Даугавпілській православній церкві."
+      }
+    ]
   },
 
   alexander_tarasov: {
@@ -298,7 +324,7 @@ const PEOPLE_DATA = {
     questions: [
       "Ким працював прадідусь Олександр Леонтійович Тарасов у Даугавпілсі в 1930-ті роки та якою була його доля в роки Другої світової війни?"
     ],
-    docImage: "assets/images/larisa_roman_certs_combo.jpg"
+    docImage: "assets/docs/3_Svidetelstvo_1931_Larisa_Tarasova_Daugavpils.jpg"
   },
 
   kirill_olga_rudenko: {
@@ -395,7 +421,19 @@ const PEOPLE_DATA = {
       "Які саме деталі родинного переказу про намісника фон Герлаха та мереживницю Марію Петрову найчастіше згадувала бабуся Лариса Олександрівна?"
     ],
     photo: "assets/images/larisa_child_portrait.jpg?v=2",
-    docImage: "assets/images/larisa_roman_certs_combo.jpg"
+    docImage: "assets/docs/3_Svidetelstvo_1931_Larisa_Tarasova_Daugavpils.jpg",
+    extraDocs: [
+      {
+        img: "assets/docs/4_Svidetelstvo_1949_Brak_Rudenko_Tarasova_Riga.jpg",
+        title: "Свідоцтво про шлюб II-РЦ № 112868 (23.04.1949, м. Рига)",
+        desc: "Шлюб Романа Кириловича Руденка та Лариси Олександрівни Тарасової у м. Ризі (запис № А-657)."
+      },
+      {
+        img: "assets/docs/7_Foto_1934_Ded_Petrochka_Maria_Lorik_Daugavpils.jpg",
+        title: "Маленька Лорик (Лариса) із прабабусею Марією та Дідом Петрочкою (~1934 р.)",
+        desc: "Родинне фото в саду у Даугавпілсі."
+      }
+    ]
   },
 
   roman_rudenko: {
@@ -415,7 +453,7 @@ const PEOPLE_DATA = {
     questions: [
       "У яких військах та в якому званні служив дідусь Роман Кирилович Руденко в Ризі у 1949 році?"
     ],
-    docImage: "assets/images/larisa_roman_certs_combo.jpg"
+    docImage: "assets/docs/4_Svidetelstvo_1949_Brak_Rudenko_Tarasova_Riga.jpg"
   },
 
   porfiry_lyudmila: {
@@ -612,7 +650,7 @@ const TIMELINE_EVENTS = [
     place: "с. Яригіно / м. Двінськ",
     desc: "Студійне фото: у центрі начальник поштового відділення Микола Прокопович Облажевич у мундирі зі старшою донькою Женею (~1905 р.н.), ліворуч — Ксенія Петрівна у мереживній пелерині з немовлям Ніною (~1907–1908 р.н.), праворуч — мереживниця Марія Петрова та «Дід Петрочка» з двома медалями.",
     personId: "nikolay_blazhevich",
-    img: "assets/images/petrov_oblazhevich_photos_combo.jpg"
+    img: "assets/docs/6_Foto_1908_Oblazhevich_Petrov_Ksenia_Maria.jpg"
   },
   {
     year: "31.01 (13.02) 1910",
@@ -622,7 +660,7 @@ const TIMELINE_EVENTS = [
     place: "м. Двінськ (Даугавпілс), Олександро-Невський собор",
     desc: "У родині начальника поштового відділення с. Яригіно Сичовського повіту Миколи Прокоповича Облажевича та Ксенії Петрівни у м. Двінську народжується двійня: донька Віра Миколаївна та хлопчик-близнюк. Хрещення відбулося 15 лютого 1910 р. в Двінському Олександро-Невського соборі (запис № 18; Імператорське свідоцтво № 11223 від 18.10.1916).",
     personId: "vera_blazhevich",
-    img: "assets/images/vera_certs_combo.jpg"
+    img: "assets/docs/1_Svidetelstvo_1916_Vera_Oblazhevich_Dvinsk.jpg"
   },
   {
     year: "1920–1929",
@@ -672,7 +710,7 @@ const TIMELINE_EVENTS = [
     place: "м. Рига, Латвія / м. Київ",
     desc: "Після війни офіцер Роман Кирилович Руденко знайомиться у Ризькому Будинку офіцерів із юною Ларисою Тарасовою; 23 квітня 1949 р. вони одружуються в Ризі (запис № А-657). 24 вересня 1952 р. в Ризі народжується мама Ірина Романівна (названа на честь двоюрідної сестри Іри). 4 жовтня 1953 р. народжується тато Юрій Порфирович Монаков.",
     personId: "larisa_rudenko",
-    img: "assets/images/larisa_roman_certs_combo.jpg"
+    img: "assets/docs/4_Svidetelstvo_1949_Brak_Rudenko_Tarasova_Riga.jpg"
   },
   {
     year: "1962–1966",
@@ -721,7 +759,7 @@ const ARCHIVE_GALLERY_ITEMS = [
     badge: "Сімейний портрет • ~1908 р.",
     title: "Микола та Ксенія Облажевич (з доньками Женею і Ніною) та Петро і Марія Петрови",
     desc: "Студійне фото до 1909 р.: прапрадід Микола Прокопович Облажевич у мундирі поштового відомства зі старшою донькою Женею, прапрабабуся Ксенія Петрівна в мереживній пелерині з маленькою Ніною, поруч — мереживниця Марія Петрова та «Дід Петрочка» (Петро Петров).",
-    img: "assets/images/petrov_oblazhevich_photos_combo.jpg"
+    img: "assets/docs/6_Foto_1908_Oblazhevich_Petrov_Ksenia_Maria.jpg"
   },
   {
     id: "gal_1934_garden",

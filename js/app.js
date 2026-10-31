@@ -568,8 +568,11 @@ function renderTimeline(eraFilter = "all") {
         </div>
 
         ${ev.img ? `
-          <div class="sm:w-36 flex-shrink-0">
-            <img src="${ev.img}" alt="${ev.title}" data-lb-src="${ev.img}" data-lb-title="${ev.title}" data-lb-badge="${ev.year} • ${ev.place}" data-lb-desc="${ev.desc}" class="w-full h-32 sm:h-28 object-cover object-center rounded-xl border border-slate-200 cursor-pointer hover:opacity-90 transition shadow-sm bg-white" loading="lazy" />
+          <div class="sm:w-48 md:w-52 flex-shrink-0 flex flex-col items-center justify-center">
+            <div data-lb-src="${ev.img}" data-lb-title="${ev.title}" data-lb-badge="${ev.year} • ${ev.place}" data-lb-desc="${ev.desc}" class="w-full h-48 sm:h-40 bg-white rounded-xl border border-slate-200/90 p-1.5 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:shadow-md transition relative overflow-hidden group/img shadow-sm" title="Натисніть, щоб відкрити у повному розмірі">
+              <img src="${ev.img}" alt="${ev.title}" class="max-w-full max-h-full object-contain rounded-lg group-hover/img:scale-[1.03] transition duration-200" loading="lazy" />
+              <span class="absolute bottom-1.5 right-1.5 text-[10px] font-semibold bg-slate-900/75 text-white px-2 py-0.5 rounded-md opacity-90 group-hover/img:bg-amber-600 transition">🔍 Збільшити</span>
+            </div>
           </div>
         ` : ''}
       </div>
