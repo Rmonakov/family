@@ -656,7 +656,7 @@ function initOrUpdateMap(branchFilter = "all", options = { focusRegion: "europe"
 
   filtered.forEach(loc => {
     boundsAll.push(loc.coords);
-    if (!loc.isAustralia) {
+    if (!loc.isAustralia && !loc.isDistantEast) {
       boundsEurope.push(loc.coords);
     }
 
@@ -742,7 +742,7 @@ function focusMapOnLocation(locId) {
 
   setTimeout(() => {
     leafletMap.invalidateSize();
-    const zoomLvl = loc.isAustralia ? 6 : 8;
+    const zoomLvl = loc.isAustralia ? 6 : (locId === "loc_kyiv_barbusse" ? 15 : 8);
     leafletMap.flyTo(loc.coords, zoomLvl, { duration: 0.85 });
     const marker = leafletMarkers[locId];
     if (marker) {
@@ -1027,6 +1027,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("mapFocusEuropeBtn")?.addEventListener("click", () => {
     initOrUpdateMap(currentMapBranch, { focusRegion: "europe" });
+  });
+
+  document.getElementById("mapFocusSemeyBtn")?.addEventListener("click", () => {
+    if (currentMapBranch !== "all" && currentMapBranch !== "monakov") {
+      initOrUpdateMap("all", { focusRegion: "all" });
+    }
+    focusMapOnLocation("loc_semipalatinsk");
   });
 
   document.getElementById("mapFocusSydneyBtn")?.addEventListener("click", () => {

@@ -289,11 +289,11 @@
 
         <!-- Era Filter Pills -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-4 pb-2">
-          <button data-era-filter="all" class="era-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі епохи (14)</button>
+          <button data-era-filter="all" class="era-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі епохи (15)</button>
           <button data-era-filter="roots" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Коріння (1805–1898)</button>
           <button data-era-filter="empire" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Двінськ і Яригіно (1908–1916)</button>
           <button data-era-filter="interwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Міжвоєнні роки (1920–1935)</button>
-          <button data-era-filter="postwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Рига та Сидней (1949–1968)</button>
+          <button data-era-filter="postwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Семипалатинськ, Рига, Сидней (1941–1968)</button>
           <button data-era-filter="kyiv" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Київські адреси (1963–2005)</button>
         </div>
 
@@ -307,13 +307,14 @@
       <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/80">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-50 border border-sky-200/60 px-2.5 py-1 rounded-lg">Географія роду (17 історичних точок)</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-50 border border-sky-200/60 px-2.5 py-1 rounded-lg">Географія роду (19 історичних точок)</span>
             <h2 class="text-lg sm:text-xl font-bold font-serif-editorial text-slate-900 mt-1.5">
-              Інтерактивна карта переселень: Пруссія • Двінськ • Рига • Сидней • Антонів • Макарово • Київ
+              Інтерактивна карта переселень: Пруссія • Двінськ • Рига • Сидней • Антонів • Макарово • Семипалатинськ • Київ
             </h2>
           </div>
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
             <button id="mapFocusEuropeBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-500 whitespace-nowrap transition">🇪🇺 Європа (основні землі)</button>
+            <button id="mapFocusSemeyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 whitespace-nowrap transition">🇰🇿 Семипалатинськ (1941–1944)</button>
             <button id="mapFocusSydneyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm hover:bg-rose-500 whitespace-nowrap transition">🇦🇺 Сидней (Травень 1968)</button>
             <button id="mapToggleRoutes" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950 shadow-sm whitespace-nowrap transition">✨ Маршрути: УВІМК.</button>
           </div>
@@ -321,10 +322,10 @@
 
         <!-- Branch Filter Row -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-3 pb-1">
-          <button data-map-branch="all" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі лінії (17)</button>
+          <button data-map-branch="all" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі лінії (19)</button>
           <button data-map-branch="gerlach" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Герлах • Облажевич • Сидней (9)</button>
           <button data-map-branch="rudenko" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Руденки • Жигаловські • Київ (4)</button>
-          <button data-map-branch="monakov" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Монакови • Хопер • Пенза (4)</button>
+          <button data-map-branch="monakov" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Монакови • Шибик • Семипалатинськ (6)</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-3 items-start">
@@ -448,7 +449,7 @@
     <div id="lightboxCaption" class="text-center text-xs text-slate-300 max-w-4xl mx-auto bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 z-10 leading-relaxed"></div>
   </div>
 
-  <script src="js/data.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/data.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
