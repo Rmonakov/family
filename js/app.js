@@ -450,6 +450,34 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
     docBox.classList.add("hidden");
   }
 
+  // Extra Documents / Back Side / AI Reconstructed Portrait
+  const extraBox = document.getElementById("sheetExtraDocsBox");
+  if (extraBox) {
+    extraBox.innerHTML = "";
+    const extras = person.extraDocs || [];
+    if (extras.length > 0) {
+      extraBox.classList.remove("hidden");
+      extras.forEach(ex => {
+        const card = document.createElement("div");
+        card.className = "bg-slate-50 rounded-2xl p-3 border border-slate-200/80 space-y-2";
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-slate-800">${ex.title}</span>
+            <button type="button" class="text-[11px] font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap">🔍 На весь екран</button>
+          </div>
+          <img src="${ex.img}" alt="${ex.title}" class="w-full max-h-52 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
+          <p class="text-[11.5px] text-slate-600 leading-relaxed">${ex.desc || ""}</p>
+        `;
+        const openEx = () => openLightbox(ex.img, ex.title, person.generation, ex.desc || person.facts);
+        card.querySelector("button")?.addEventListener("click", openEx);
+        card.querySelector("img")?.addEventListener("click", openEx);
+        extraBox.appendChild(card);
+      });
+    } else {
+      extraBox.classList.add("hidden");
+    }
+  }
+
   // Research Clues / Questions
   const cluesBox = document.getElementById("sheetCluesBox");
   const cluesList = document.getElementById("sheetCluesList");
