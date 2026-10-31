@@ -583,25 +583,11 @@ function ensureLeafletMapCreated() {
     scrollWheelZoom: true
   }).setView([52.2, 26.5], 5);
 
-  // Primary tile layer: OpenStreetMap + CartoDB Voyager for maximum compatibility across file:// and https://
-  const voyagerLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    subdomains: "abcd",
+  // 100% безкоштовний офіційний шар OpenStreetMap (без жодних API-ключів та з українськими назвами міст і сіл)
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution: "&copy; OpenStreetMap &copy; CARTO"
-  });
-
-  const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap"
-  });
-
-  voyagerLayer.on("tileerror", () => {
-    if (!leafletMap.hasLayer(osmLayer)) {
-      osmLayer.addTo(leafletMap);
-    }
-  });
-
-  voyagerLayer.addTo(leafletMap);
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(leafletMap);
 }
 
 function initOrUpdateMap(branchFilter = "all", options = { focusRegion: "europe" }) {
