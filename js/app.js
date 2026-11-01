@@ -182,7 +182,12 @@ function renderTreeGraph() {
     }
 
     const initial = (person.shortName || person.name || "Р").trim().charAt(0);
-    const avatarHtml = person.photo
+    const avatarHtml = person.photo && person.secondPhoto
+      ? `<div class="flex items-center gap-0.5 flex-shrink-0">
+          <img src="${person.photo}" alt="${person.shortName}" class="w-9 h-14 object-cover object-center rounded-l-xl border border-slate-200 bg-slate-100" loading="lazy" />
+          <img src="${person.secondPhoto}" alt="${person.shortName}" class="w-9 h-14 object-cover object-center rounded-r-xl border border-slate-200 bg-slate-100" loading="lazy" />
+        </div>`
+      : person.photo
       ? `<img src="${person.photo}" alt="${person.shortName}" class="w-12 h-14 object-cover object-center rounded-xl border border-slate-200 flex-shrink-0 bg-slate-100" loading="lazy" />`
       : `<div class="w-11 h-12 rounded-xl flex items-center justify-center font-serif-editorial font-bold text-base flex-shrink-0 border" style="background-color: ${meta.bgLight}; color: ${meta.badgeText}; border-color: ${meta.border}">${initial}</div>`;
 
@@ -389,6 +394,7 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
   document.getElementById("sheetFacts").textContent = person.facts;
 
   const photoEl = document.getElementById("sheetPhoto");
+  const secondPhotoEl = document.getElementById("sheetSecondPhoto");
   const fallbackEl = document.getElementById("sheetAvatarFallback");
   if (person.photo) {
     photoEl.src = person.photo;
@@ -402,6 +408,15 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
     fallbackEl.style.backgroundColor = meta.bgLight;
     fallbackEl.style.color = meta.badgeText;
     fallbackEl.style.borderColor = meta.border;
+  }
+  if (secondPhotoEl) {
+    if (person.secondPhoto) {
+      secondPhotoEl.src = person.secondPhoto;
+      secondPhotoEl.alt = person.shortName;
+      secondPhotoEl.classList.remove("hidden");
+    } else {
+      secondPhotoEl.classList.add("hidden");
+    }
   }
 
   // Show on Map button
@@ -992,6 +1007,12 @@ window.addEventListener("DOMContentLoaded", () => {
     const p = PEOPLE_DATA[currentPersonId];
     if (p && p.photo) {
       openLightbox(p.photo, p.name, p.generation, p.facts);
+    }
+  });
+  document.getElementById("sheetSecondPhoto")?.addEventListener("click", () => {
+    const p = PEOPLE_DATA[currentPersonId];
+    if (p && p.secondPhoto) {
+      openLightbox(p.secondPhoto, p.name, p.generation, p.facts);
     }
   });
 

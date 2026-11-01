@@ -110,7 +110,7 @@
         </button>
         <button data-nav-tab="archive" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
           <i data-lucide="images" class="w-3.5 h-3.5"></i>
-          <span>Документи (14)</span>
+          <span>Документи (18)</span>
         </button>
         <button data-nav-tab="mystery" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
           <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-600"></i>
@@ -140,7 +140,7 @@
       <div class="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/90 pointer-events-auto max-w-full">
           <button data-branch-filter="all" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white shadow-sm whitespace-nowrap transition">
-            Усі гілки (22)
+            Усі гілки (23)
           </button>
           <button data-branch-filter="direct" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 whitespace-nowrap transition flex items-center gap-1">
             <span>✨ Пряма лінія Герлаха</span>
@@ -200,8 +200,9 @@
 
         <!-- Sheet Header -->
         <div class="px-5 pt-3 pb-3.5 border-b border-slate-100 flex items-start justify-between gap-3">
-          <div class="flex items-center gap-3.5 min-w-0">
+          <div class="flex items-center gap-2.5 min-w-0">
             <img id="sheetPhoto" src="" alt="" class="hidden w-14 h-16 object-cover rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 bg-slate-100 cursor-pointer" title="Натисніть для збільшення" />
+            <img id="sheetSecondPhoto" src="" alt="" class="hidden w-14 h-16 object-cover rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 bg-slate-100 cursor-pointer" title="Натисніть для збільшення" />
             <div id="sheetAvatarFallback" class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 font-serif-editorial font-bold text-lg flex items-center justify-center flex-shrink-0">
               Р
             </div>
@@ -289,7 +290,7 @@
 
         <!-- Era Filter Pills -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-4 pb-2">
-          <button data-era-filter="all" class="era-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі епохи (16)</button>
+          <button data-era-filter="all" class="era-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі епохи (18)</button>
           <button data-era-filter="roots" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Коріння (1805–1898)</button>
           <button data-era-filter="empire" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Двінськ і Яригіно (1908–1916)</button>
           <button data-era-filter="interwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Міжвоєнні роки (1920–1935)</button>
@@ -356,10 +357,10 @@
             </p>
           </div>
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            <button data-gal-filter="all" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі (14)</button>
+            <button data-gal-filter="all" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі (18)</button>
             <button data-gal-filter="dvinsk" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Двінськ / Даугавпілс (6)</button>
             <button data-gal-filter="riga_sydney" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Рига та Сидней (3)</button>
-            <button data-gal-filter="rudenko_monakov" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Руденки • Монакови • Схема (5)</button>
+            <button data-gal-filter="rudenko_monakov" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Руденки • Монакови • Схема (9)</button>
           </div>
         </div>
 
@@ -449,7 +450,7 @@
     <div id="lightboxCaption" class="text-center text-xs text-slate-300 max-w-4xl mx-auto bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 z-10 leading-relaxed"></div>
   </div>
 
-  <script src="js/data.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/data.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>
