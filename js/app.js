@@ -525,32 +525,25 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
     }
   }
 
-  // Document Preview & Group Photo Legend
+  // Document Preview & Hint to open Fullscreen Lightbox for itemized breakdown
   const docBox = document.getElementById("sheetDocBox");
   const docImg = document.getElementById("sheetDocImg");
-  const legendBox = document.getElementById("sheetPhotoLegendBox");
-  const legendList = document.getElementById("sheetPhotoLegendList");
+  const legendHint = document.getElementById("sheetPhotoLegendHint");
   if (person.docImage) {
     docImg.src = person.docImage;
     docBox.classList.remove("hidden");
-    if (legendBox && legendList) {
-      legendList.innerHTML = "";
-      const legendItems = person.photoLegend || [];
-      if (legendItems.length > 0) {
-        legendBox.classList.remove("hidden");
-        legendItems.forEach(itemHtml => {
-          const li = document.createElement("li");
-          li.className = "bg-white/90 rounded-xl px-2.5 py-1.5 border border-slate-200/70";
-          li.innerHTML = itemHtml;
-          legendList.appendChild(li);
-        });
+    const metaForDoc = findPhotoDetails(person.docImage, person);
+    if (legendHint) {
+      if (metaForDoc.photoLegend && metaForDoc.photoLegend.length > 0) {
+        legendHint.classList.remove("hidden");
+        legendHint.onclick = () => openLightbox(person.docImage, person.name, person.generation, person.facts);
       } else {
-        legendBox.classList.add("hidden");
+        legendHint.classList.add("hidden");
       }
     }
   } else {
     docBox.classList.add("hidden");
-    if (legendBox) legendBox.classList.add("hidden");
+    if (legendHint) legendHint.classList.add("hidden");
   }
 
   // Extra Documents / Back Side / AI Reconstructed Portrait
@@ -561,6 +554,8 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
     if (extras.length > 0) {
       extraBox.classList.remove("hidden");
       extras.forEach(ex => {
+        const exMeta = findPhotoDetails(ex.img);
+        const hasGroupLegend = exMeta.photoLegend && exMeta.photoLegend.length > 0;
         const card = document.createElement("div");
         card.className = "bg-slate-50 rounded-2xl p-3 border border-slate-200/80 space-y-2";
         card.innerHTML = `
@@ -570,10 +565,12 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
           </div>
           <img src="${ex.img}" alt="${ex.title}" class="w-full max-h-52 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
           <p class="text-[11.5px] text-slate-600 leading-relaxed">${ex.desc || ""}</p>
+          ${hasGroupLegend ? `<div class="text-[11px] font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/70 rounded-lg px-2.5 py-1 cursor-pointer">👥 Натисніть на фото, щоб побачити детальний опис хто де стоїть (${exMeta.photoLegend.length}) →</div>` : ""}
         `;
         const openEx = () => openLightbox(ex.img, ex.title, person.generation, ex.desc || person.facts);
         card.querySelector("button")?.addEventListener("click", openEx);
         card.querySelector("img")?.addEventListener("click", openEx);
+        card.addEventListener("click", openEx);
         extraBox.appendChild(card);
       });
     } else {
@@ -876,6 +873,45 @@ function focusMapOnLocation(locId) {
 }
 
 // ==================== ARCHIVE GALLERY & ZOOMABLE LIGHTBOX ====================
+function findPhotoDetails(imgSrc, fallbackPerson = null) {
+  const cleanSrc = String(imgSrc || "").split("?")[0];
+  if (!cleanSrc) return { photoLegend: [], techNotes: "", desc: "" };
+
+  const galMatch = ARCHIVE_GALLERY_ITEMS.find(item => String(item.img || "").split("?")[0] === cleanSrc);
+  if (galMatch && ((galMatch.photoLegend && galMatch.photoLegend.length > 0) || galMatch.techNotes)) {
+    return {
+      photoLegend: galMatch.photoLegend || [],
+      techNotes: galMatch.techNotes || "",
+      desc: galMatch.desc || "",
+      badge: galMatch.badge || "",
+      title: galMatch.title || ""
+    };
+  }
+
+  if (fallbackPerson && String(fallbackPerson.docImage || "").split("?")[0] === cleanSrc) {
+    return {
+      photoLegend: fallbackPerson.photoLegend || [],
+      techNotes: fallbackPerson.techNotes || "",
+      desc: fallbackPerson.facts || ""
+    };
+  }
+
+  const personMatch = Object.values(PEOPLE_DATA).find(p => String(p.docImage || "").split("?")[0] === cleanSrc && p.photoLegend);
+  if (personMatch) {
+    return {
+      photoLegend: personMatch.photoLegend || [],
+      techNotes: personMatch.techNotes || "",
+      desc: personMatch.facts || ""
+    };
+  }
+
+  return {
+    photoLegend: galMatch?.photoLegend || [],
+    techNotes: galMatch?.techNotes || "",
+    desc: galMatch?.desc || ""
+  };
+}
+
 function renderArchiveGallery(categoryFilter = "all") {
   const grid = document.getElementById("archiveGalleryGrid");
   if (!grid) return;
@@ -886,18 +922,11 @@ function renderArchiveGallery(categoryFilter = "all") {
     const card = document.createElement("div");
     card.className = "group bg-slate-50/80 hover:bg-white rounded-2xl border border-slate-200/90 hover:border-amber-400 overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between";
 
-    const legendHtml = item.photoLegend && item.photoLegend.length > 0
-      ? `<div class="mt-2.5 pt-2 border-t border-slate-200/80">
-           <div class="text-[10.5px] font-bold uppercase tracking-wider text-sky-900 mb-1.5">👥 Хто де стоїть і ким доводиться:</div>
-           <ul class="space-y-1 text-[11.5px] text-slate-700 leading-snug">
-             ${item.photoLegend.map(l => `<li class="bg-white/90 rounded-lg px-2 py-1 border border-slate-200/60">${l}</li>`).join("")}
-           </ul>
-         </div>`
-      : "";
-
-    const techHtml = item.techNotes
-      ? `<div class="mt-2.5 pt-2 border-t border-dashed border-slate-200 text-[11px] text-slate-500 leading-relaxed">
-           <strong class="text-slate-600">🔬 Технічні деталі звороту:</strong> ${item.techNotes}
+    const hasGroupLegend = item.photoLegend && item.photoLegend.length > 0;
+    const hintHtml = hasGroupLegend
+      ? `<div class="mt-2.5 text-[11px] font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/70 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+           <span>👥 Натисніть, щоб збільшити й побачити хто де стоїть (${item.photoLegend.length})</span>
+           <span>🔍 →</span>
          </div>`
       : "";
 
@@ -911,8 +940,7 @@ function renderArchiveGallery(categoryFilter = "all") {
         <div class="p-4">
           <h3 class="font-bold text-sm text-slate-900 leading-snug">${item.title}</h3>
           <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">${item.desc}</p>
-          ${legendHtml}
-          ${techHtml}
+          ${hintHtml}
         </div>
       </div>
     `;
@@ -926,12 +954,55 @@ function renderArchiveGallery(categoryFilter = "all") {
 function openLightbox(imgSrc, title, badge, caption) {
   const modal = document.getElementById("docLightboxModal");
   const imgEl = document.getElementById("lightboxImg");
+  const captionEl = document.getElementById("lightboxCaption");
   if (!modal || !imgEl || !imgSrc) return;
 
   imgEl.src = imgSrc;
-  document.getElementById("lightboxTitle").textContent = title || "Архівний документ роду";
-  document.getElementById("lightboxBadge").textContent = badge || "Оцифрований архів";
-  document.getElementById("lightboxCaption").textContent = caption || "";
+
+  const details = findPhotoDetails(imgSrc, PEOPLE_DATA[currentPersonId]);
+  const rawBadge = details.badge || badge || "Архів";
+  // Компактний бейдж в один рядок (щоб на мобільному шапка займала мінімум місця)
+  const shortBadge = rawBadge.includes("•") ? rawBadge.split("•")[0].trim() : rawBadge;
+
+  document.getElementById("lightboxTitle").textContent = details.title || title || "Архівний документ роду";
+  document.getElementById("lightboxBadge").textContent = shortBadge;
+
+  if (captionEl) {
+    captionEl.classList.remove("hidden");
+    const legendItems = details.photoLegend || [];
+    const techNotes = details.techNotes || "";
+    const mainDesc = details.desc || caption || "";
+
+    let html = "";
+    if (legendItems.length > 0) {
+      html += `
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-1.5 flex items-center justify-between gap-2">
+            <span>👥 Хто де стоїть і ким доводиться (збільшуйте фото пальцем або коліщатком):</span>
+          </div>
+          <ul class="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-xs text-slate-100 leading-snug">
+            ${legendItems.map(item => `<li class="bg-slate-800/90 border border-slate-700/80 rounded-xl px-2.5 py-1.5">${item}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+      if (mainDesc) {
+        html += `<p class="text-[11.5px] text-slate-300 leading-relaxed pt-1">${mainDesc}</p>`;
+      }
+    } else if (mainDesc) {
+      html += `<p class="text-xs text-slate-200 leading-relaxed">${mainDesc}</p>`;
+    }
+
+    if (techNotes) {
+      html += `
+        <div class="pt-2 border-t border-dashed border-slate-700/90 text-[11px] text-slate-400 leading-relaxed">
+          <strong class="text-slate-300">🔬 Технічні деталі фото та написи на звороті:</strong> ${techNotes}
+        </div>
+      `;
+    }
+
+    captionEl.innerHTML = html;
+  }
+
   modal.classList.remove("hidden");
 
   if (lightboxPanzoom) {
@@ -1208,6 +1279,10 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("lightboxCloseBtn")?.addEventListener("click", closeLightbox);
   document.getElementById("lbZoomResetBtn")?.addEventListener("click", () => {
     if (lightboxPanzoom) lightboxPanzoom.reset();
+  });
+  document.getElementById("lbToggleCaptionBtn")?.addEventListener("click", () => {
+    const cap = document.getElementById("lightboxCaption");
+    if (cap) cap.classList.toggle("hidden");
   });
   document.getElementById("docLightboxModal")?.addEventListener("click", (e) => {
     if (e.target.id === "docLightboxModal" || e.target.id === "lightboxViewport") {

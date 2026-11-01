@@ -251,12 +251,10 @@
             </div>
             <img id="sheetDocImg" src="" alt="Архівний документ" class="w-full max-h-56 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
 
-            <!-- Who is in the photo (Positioned right below main group photo) -->
-            <div id="sheetPhotoLegendBox" class="hidden mt-3 pt-2.5 border-t border-slate-200/80">
-              <div class="text-[11px] font-bold uppercase tracking-wider text-sky-900 mb-2 flex items-center gap-1.5">
-                <span>👥 Хто зображений на знімку (хто де стоїть і ким доводиться):</span>
-              </div>
-              <ul id="sheetPhotoLegendList" class="space-y-1.5 text-xs text-slate-700 leading-relaxed"></ul>
+            <!-- Hint to click photo for full-screen itemized breakdown -->
+            <div id="sheetPhotoLegendHint" class="hidden mt-2 flex items-center justify-between gap-2 bg-amber-50/90 border border-amber-200/80 rounded-xl px-2.5 py-1.5 text-[11.5px] text-amber-950 cursor-pointer hover:bg-amber-100/80 transition">
+              <span>👥 <strong>Груповий знімок:</strong> натисніть на фото, щоб збільшити та прочитати поіменний опис хто де стоїть</span>
+              <span class="font-bold text-amber-700 whitespace-nowrap">🔍 Відкрити →</span>
             </div>
           </div>
 
@@ -447,26 +445,29 @@
   </nav>
 
   <!-- ==================== FULLSCREEN ZOOMABLE LIGHTBOX MODAL ==================== -->
-  <div id="docLightboxModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-5 select-none">
-    <div class="flex items-center justify-between gap-3 text-white max-w-6xl w-full mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl px-4 py-2.5 z-10">
-      <div class="min-w-0">
-        <div id="lightboxBadge" class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Оцифрований архів</div>
-        <h3 id="lightboxTitle" class="text-xs sm:text-sm font-bold text-white truncate mt-0.5">Документ</h3>
+  <div id="docLightboxModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-md flex flex-col justify-between p-2 sm:p-4 select-none">
+    <div class="flex items-center justify-between gap-2 text-white max-w-6xl w-full mx-auto bg-slate-900/90 border border-slate-800/90 rounded-xl px-2.5 py-1.5 z-10">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span id="lightboxBadge" class="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">Архів</span>
+        <h3 id="lightboxTitle" class="text-xs sm:text-sm font-semibold text-white truncate">Документ</h3>
       </div>
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <button id="lbZoomResetBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition">100%</button>
-        <button id="lightboxCloseBtn" type="button" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition">✕ Закрити</button>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button id="lbToggleCaptionBtn" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-[11px] font-semibold transition">📋 Опис</button>
+        <button id="lbZoomResetBtn" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition">100%</button>
+        <button id="lightboxCloseBtn" type="button" aria-label="Закрити" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition flex items-center">
+          <span>✕</span><span class="hidden sm:inline ml-1">Закрити</span>
+        </button>
       </div>
     </div>
 
-    <div id="lightboxViewport" class="flex-1 flex items-center justify-center overflow-hidden my-2 cursor-grab active:cursor-grabbing">
-      <img id="lightboxImg" src="" alt="Архівний скан" class="max-h-[78dvh] max-w-full object-contain rounded-lg shadow-2xl" />
+    <div id="lightboxViewport" class="flex-1 flex items-center justify-center overflow-hidden my-1.5 cursor-grab active:cursor-grabbing">
+      <img id="lightboxImg" src="" alt="Архівний скан" class="max-h-[64dvh] sm:max-h-[70dvh] max-w-full object-contain rounded-lg shadow-2xl" />
     </div>
 
-    <div id="lightboxCaption" class="text-center text-xs text-slate-300 max-w-4xl mx-auto bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 z-10 leading-relaxed"></div>
+    <div id="lightboxCaption" class="text-left text-xs text-slate-200 max-w-5xl w-full mx-auto bg-slate-900/95 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border border-slate-800 z-10 leading-relaxed max-h-[34dvh] overflow-y-auto space-y-2"></div>
   </div>
 
-  <script src="js/data.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/data.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>
