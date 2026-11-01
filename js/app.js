@@ -20,14 +20,34 @@ const CARD_HEIGHT = 86;
 
 // ==================== D3.JS + SVG + HTML HYBRID INTERACTIVE TREE ====================
 const GENERATION_BANDS = [
-  { gen: 7, y: 70, label: "VII покоління • поч. XIX ст. (~1805–1815)" },
-  { gen: 6, y: 230, label: "VI покоління • сер. XIX ст. (Пруссія / Двінськ / Антонів)" },
-  { gen: 5, y: 410, label: "V покоління • кін. XIX ст. (~1865–1886)" },
-  { gen: 4, y: 600, label: "IV покоління • поч. XX ст. (1898–1910)" },
-  { gen: 3, y: 790, label: "III покоління • Бабусі та дідусі (1926–1931)" },
-  { gen: 2, y: 960, label: "II покоління • Батьки та сестри (1952–1962)" },
-  { gen: 1, y: 1130, label: "I покоління • Сучасність (1985)" }
+  { gen: 7, y: 70, label: "VII покоління • поч. XIX ст. (~1805–1815)", shortLabel: "VII пок. • ~1805–1815" },
+  { gen: 6, y: 230, label: "VI покоління • сер. XIX ст. (Пруссія / Двінськ / Антонів)", shortLabel: "VI пок. • сер. XIX ст." },
+  { gen: 5, y: 410, label: "V покоління • кін. XIX ст. (~1865–1886)", shortLabel: "V пок. • ~1865–1886" },
+  { gen: 4, y: 600, label: "IV покоління • поч. XX ст. (1898–1910)", shortLabel: "IV пок. • 1898–1910" },
+  { gen: 3, y: 790, label: "III покоління • Бабусі та дідусі (1926–1931)", shortLabel: "III пок. • 1926–1931" },
+  { gen: 2, y: 960, label: "II покоління • Батьки та сестри (1952–1962)", shortLabel: "II пок. • 1952–1962" },
+  { gen: 1, y: 1130, label: "I покоління • Сучасність (1985)", shortLabel: "I пок. • 1985" }
 ];
+
+function updateGenerationLabelsPosition(transform) {
+  const svgEl = document.getElementById("treeSvgLayer");
+  if (!svgEl || !transform) return;
+
+  const { x, k } = transform;
+  // Тримаємо основний підпис покоління біля лівого краю екрана як координатну шкалу
+  const stickyX = Math.min(Math.max(54, (-x + 22) / k), 2480);
+
+  svgEl.querySelectorAll(".gen-sticky-label").forEach(el => {
+    el.setAttribute("x", String(stickyX));
+  });
+
+  // Ховаємо повторювані координатні мітки, якщо до них наблизився основний плаваючий підпис
+  svgEl.querySelectorAll(".gen-repeat-label").forEach(el => {
+    const anchorX = Number(el.getAttribute("data-anchor-x") || 0);
+    const dist = Math.abs(stickyX + 140 - anchorX);
+    el.style.opacity = dist < 340 ? "0" : "0.72";
+  });
+}
 
 function isPersonMatchingFilter(person, filter) {
   if (filter === "all") return true;
@@ -45,29 +65,32 @@ function renderTreeGraph() {
   svgEl.innerHTML = "";
   nodesLayer.innerHTML = "";
 
-  // 1. Render subtle horizontal Generation Guide Bands in SVG
+  // 1. Render subtle horizontal Generation Guide Bands & Guide Lines in SVG
   GENERATION_BANDS.forEach((band, idx) => {
     const bandGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const bandTopY = band.y - 76;
+
     if (idx % 2 === 0) {
       const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
       rect.setAttribute("x", "30");
-      rect.setAttribute("y", String(band.y - 68));
+      rect.setAttribute("y", String(bandTopY));
       rect.setAttribute("width", "2840");
-      rect.setAttribute("height", "136");
+      rect.setAttribute("height", "138");
       rect.setAttribute("rx", "24");
       rect.setAttribute("fill", "rgba(241, 245, 249, 0.55)");
       bandGroup.appendChild(rect);
     }
 
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", "54");
-    text.setAttribute("y", String(band.y - 44));
-    text.setAttribute("fill", "#94a3b8");
-    text.setAttribute("font-size", "11");
-    text.setAttribute("font-weight", "600");
-    text.setAttribute("letter-spacing", "0.06em");
-    text.textContent = band.label.toUpperCase();
-    bandGroup.appendChild(text);
+    // Тонка пунктирна лінія-орієнтир уздовж верхньої межі кожного покоління
+    const guideLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    guideLine.setAttribute("x1", "48");
+    guideLine.setAttribute("y1", String(bandTopY));
+    guideLine.setAttribute("x2", "2850");
+    guideLine.setAttribute("y2", String(bandTopY));
+    guideLine.setAttribute("stroke", "rgba(148, 163, 184, 0.28)");
+    guideLine.setAttribute("stroke-width", "1");
+    guideLine.setAttribute("stroke-dasharray", "4 6");
+    bandGroup.appendChild(guideLine);
 
     svgEl.appendChild(bandGroup);
   });
@@ -157,6 +180,47 @@ function renderTreeGraph() {
     svgEl.appendChild(path);
   });
 
+  // 3.5. Render Generation Coordinate Labels above Bezier lines (13px above card tops)
+  GENERATION_BANDS.forEach(band => {
+    const labelGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const labelY = band.y - 56; // 13px вище верхнього краю карток (band.y - 43)
+
+    // Основний підпис покоління (плавно слідує за лівим краєм області перегляду)
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("class", "gen-sticky-label");
+    text.setAttribute("x", "54");
+    text.setAttribute("y", String(labelY));
+    text.setAttribute("fill", "#64748b");
+    text.setAttribute("font-size", "10.5");
+    text.setAttribute("font-weight", "600");
+    text.setAttribute("letter-spacing", "0.06em");
+    text.setAttribute("style", "paint-order: stroke; stroke: rgba(248, 250, 252, 0.96); stroke-width: 5px; stroke-linejoin: round;");
+    text.textContent = band.label.toUpperCase();
+    labelGroup.appendChild(text);
+
+    // Додаткові ненав'язливі координатні мітки у центральній та правій частинах дерева
+    [
+      { x: 1480, anchor: "middle", anchorCenter: 1480 },
+      { x: 2840, anchor: "end", anchorCenter: 2760 }
+    ].forEach(marker => {
+      const repeatText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      repeatText.setAttribute("class", "gen-repeat-label");
+      repeatText.setAttribute("data-anchor-x", String(marker.anchorCenter));
+      repeatText.setAttribute("x", String(marker.x));
+      repeatText.setAttribute("y", String(labelY));
+      repeatText.setAttribute("text-anchor", marker.anchor);
+      repeatText.setAttribute("fill", "#94a3b8");
+      repeatText.setAttribute("font-size", "10");
+      repeatText.setAttribute("font-weight", "600");
+      repeatText.setAttribute("letter-spacing", "0.05em");
+      repeatText.setAttribute("style", "paint-order: stroke; stroke: rgba(248, 250, 252, 0.94); stroke-width: 4px; stroke-linejoin: round; transition: opacity 0.2s ease;");
+      repeatText.textContent = band.shortLabel.toUpperCase();
+      labelGroup.appendChild(repeatText);
+    });
+
+    svgEl.appendChild(labelGroup);
+  });
+
   // 4. Render Crisp HTML Person Cards
   Object.values(PEOPLE_DATA).forEach(person => {
     const meta = BRANCH_META[person.branch] || BRANCH_META.gerlach;
@@ -223,6 +287,11 @@ function renderTreeGraph() {
 
     nodesLayer.appendChild(card);
   });
+
+  const viewportEl = document.getElementById("treeViewport");
+  if (viewportEl && typeof d3 !== "undefined") {
+    updateGenerationLabelsPosition(d3.zoomTransform(viewportEl));
+  }
 }
 
 function initInteractiveTree() {
@@ -242,6 +311,7 @@ function initInteractiveTree() {
       if (zoomLabelEl) {
         zoomLabelEl.textContent = `${Math.round(k * 100)}%`;
       }
+      updateGenerationLabelsPosition(event.transform);
     });
 
   d3SvgSelection.call(d3ZoomBehavior).on("dblclick.zoom", null);
