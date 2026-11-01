@@ -140,7 +140,7 @@
       <div class="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/90 pointer-events-auto max-w-full">
           <button data-branch-filter="all" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white shadow-sm whitespace-nowrap transition">
-            Усі гілки (23)
+            Усі гілки (31)
           </button>
           <button data-branch-filter="direct" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 whitespace-nowrap transition flex items-center gap-1">
             <span>✨ Пряма лінія Герлаха</span>
@@ -163,9 +163,9 @@
       <!-- Interactive D3 Zoom & Pan Viewport -->
       <div id="treeViewport" class="flex-1 w-full h-full canvas-grid-bg relative overflow-hidden cursor-grab active:cursor-grabbing touch-none select-none">
         <!-- Transformed Layer (driven by d3.zoom) -->
-        <div id="treeZoomLayer" class="absolute top-0 left-0 origin-top-left will-change-transform" style="width: 1800px; height: 1260px;">
+        <div id="treeZoomLayer" class="absolute top-0 left-0 origin-top-left will-change-transform" style="width: 2640px; height: 1260px;">
           <!-- SVG Layer for Generation Bands, Bezier Connections & Marriage Badges -->
-          <svg id="treeSvgLayer" width="1800" height="1260" class="absolute inset-0 pointer-events-none overflow-visible"></svg>
+          <svg id="treeSvgLayer" width="2640" height="1260" class="absolute inset-0 pointer-events-none overflow-visible"></svg>
           <!-- HTML Layer for Crisp Editorial Node Cards -->
           <div id="treeNodesLayer" class="absolute inset-0 pointer-events-none"></div>
         </div>
@@ -450,7 +450,7 @@
     <div id="lightboxCaption" class="text-center text-xs text-slate-300 max-w-4xl mx-auto bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 z-10 leading-relaxed"></div>
   </div>
 
-  <script src="js/data.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/data.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>
