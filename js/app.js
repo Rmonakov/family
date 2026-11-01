@@ -52,7 +52,7 @@ function renderTreeGraph() {
       const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
       rect.setAttribute("x", "30");
       rect.setAttribute("y", String(band.y - 68));
-      rect.setAttribute("width", "2580");
+      rect.setAttribute("width", "2840");
       rect.setAttribute("height", "136");
       rect.setAttribute("rx", "24");
       rect.setAttribute("fill", "rgba(241, 245, 249, 0.55)");
