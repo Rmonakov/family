@@ -525,14 +525,32 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
     }
   }
 
-  // Document Preview
+  // Document Preview & Group Photo Legend
   const docBox = document.getElementById("sheetDocBox");
   const docImg = document.getElementById("sheetDocImg");
+  const legendBox = document.getElementById("sheetPhotoLegendBox");
+  const legendList = document.getElementById("sheetPhotoLegendList");
   if (person.docImage) {
     docImg.src = person.docImage;
     docBox.classList.remove("hidden");
+    if (legendBox && legendList) {
+      legendList.innerHTML = "";
+      const legendItems = person.photoLegend || [];
+      if (legendItems.length > 0) {
+        legendBox.classList.remove("hidden");
+        legendItems.forEach(itemHtml => {
+          const li = document.createElement("li");
+          li.className = "bg-white/90 rounded-xl px-2.5 py-1.5 border border-slate-200/70";
+          li.innerHTML = itemHtml;
+          legendList.appendChild(li);
+        });
+      } else {
+        legendBox.classList.add("hidden");
+      }
+    }
   } else {
     docBox.classList.add("hidden");
+    if (legendBox) legendBox.classList.add("hidden");
   }
 
   // Extra Documents / Back Side / AI Reconstructed Portrait
@@ -560,6 +578,19 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
       });
     } else {
       extraBox.classList.add("hidden");
+    }
+  }
+
+  // Technical Photo & Back-Side Inscription Details (Separated at Bottom)
+  const techBox = document.getElementById("sheetTechNotesBox");
+  const techText = document.getElementById("sheetTechNotesText");
+  if (techBox && techText) {
+    if (person.techNotes) {
+      techBox.classList.remove("hidden");
+      techText.textContent = person.techNotes;
+    } else {
+      techBox.classList.add("hidden");
+      techText.textContent = "";
     }
   }
 
@@ -854,6 +885,22 @@ function renderArchiveGallery(categoryFilter = "all") {
   items.forEach(item => {
     const card = document.createElement("div");
     card.className = "group bg-slate-50/80 hover:bg-white rounded-2xl border border-slate-200/90 hover:border-amber-400 overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between";
+
+    const legendHtml = item.photoLegend && item.photoLegend.length > 0
+      ? `<div class="mt-2.5 pt-2 border-t border-slate-200/80">
+           <div class="text-[10.5px] font-bold uppercase tracking-wider text-sky-900 mb-1.5">👥 Хто де стоїть і ким доводиться:</div>
+           <ul class="space-y-1 text-[11.5px] text-slate-700 leading-snug">
+             ${item.photoLegend.map(l => `<li class="bg-white/90 rounded-lg px-2 py-1 border border-slate-200/60">${l}</li>`).join("")}
+           </ul>
+         </div>`
+      : "";
+
+    const techHtml = item.techNotes
+      ? `<div class="mt-2.5 pt-2 border-t border-dashed border-slate-200 text-[11px] text-slate-500 leading-relaxed">
+           <strong class="text-slate-600">🔬 Технічні деталі звороту:</strong> ${item.techNotes}
+         </div>`
+      : "";
+
     card.innerHTML = `
       <div>
         <div class="h-52 bg-slate-900 flex items-center justify-center p-2 overflow-hidden relative">
@@ -864,6 +911,8 @@ function renderArchiveGallery(categoryFilter = "all") {
         <div class="p-4">
           <h3 class="font-bold text-sm text-slate-900 leading-snug">${item.title}</h3>
           <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">${item.desc}</p>
+          ${legendHtml}
+          ${techHtml}
         </div>
       </div>
     `;

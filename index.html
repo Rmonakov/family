@@ -249,16 +249,32 @@
                 <span>На весь екран</span>
               </button>
             </div>
-            <img id="sheetDocImg" src="" alt="Архівний документ" class="w-full max-h-48 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
+            <img id="sheetDocImg" src="" alt="Архівний документ" class="w-full max-h-56 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
+
+            <!-- Who is in the photo (Positioned right below main group photo) -->
+            <div id="sheetPhotoLegendBox" class="hidden mt-3 pt-2.5 border-t border-slate-200/80">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-sky-900 mb-2 flex items-center gap-1.5">
+                <span>👥 Хто зображений на знімку (хто де стоїть і ким доводиться):</span>
+              </div>
+              <ul id="sheetPhotoLegendList" class="space-y-1.5 text-xs text-slate-700 leading-relaxed"></ul>
+            </div>
+          </div>
+
+          <!-- Biography / Facts (Primary Human Narrative at Top) -->
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Біографія та родинна історія</div>
+            <p id="sheetFacts" class="text-slate-700 leading-relaxed text-[13.5px]"></p>
           </div>
 
           <!-- Extra Documents / Back Side / AI Reconstructed Portrait -->
           <div id="sheetExtraDocsBox" class="hidden space-y-2.5"></div>
 
-          <!-- Biography / Facts -->
-          <div>
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Біографія та документальні факти</div>
-            <p id="sheetFacts" class="text-slate-700 leading-relaxed text-[13.5px]"></p>
+          <!-- Technical Photo & Back-Side Inscription Details (Separated at Bottom) -->
+          <div id="sheetTechNotesBox" class="hidden bg-slate-100/90 border border-slate-200/90 rounded-2xl p-3.5">
+            <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <span>🔬 Технічні деталі фото та розшифрування написів на звороті</span>
+            </div>
+            <p id="sheetTechNotesText" class="mt-1.5 text-xs text-slate-600 leading-relaxed"></p>
           </div>
 
           <!-- Research Clues / Questions -->
@@ -450,7 +466,7 @@
     <div id="lightboxCaption" class="text-center text-xs text-slate-300 max-w-4xl mx-auto bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 z-10 leading-relaxed"></div>
   </div>
 
-  <script src="js/data.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
+  <script src="js/data.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>
