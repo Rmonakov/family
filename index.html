@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
   <title>Родинний архів: Герлах • Облажевич • Руденки • Монакови</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,6 +77,54 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900 pb-16 md:pb-0">
+
+  <!-- ==================== FAMILY ACCESS GATE (PIN LOCK) ==================== -->
+  <div id="familyAccessGate" class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex items-center justify-center p-4 select-none">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl border border-slate-200/90 text-center space-y-5">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md flex items-center justify-center mx-auto">
+        <i data-lucide="lock" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <span class="text-[10.5px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">Приватний сімейний портал</span>
+        <h2 class="text-xl font-bold font-serif-editorial text-slate-900 mt-2.5">Родинний архів</h2>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          Герлах • Облажевич • Руденки • Жигаловські • Монакови • Шибик
+        </p>
+      </div>
+
+      <form id="familyAccessForm" class="space-y-3" autocomplete="off">
+        <div>
+          <label for="familyAccessInput" class="block text-xs font-semibold text-slate-700 mb-1.5">
+            Введіть сімейний код доступу:
+          </label>
+          <input
+            id="familyAccessInput"
+            type="password"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="4"
+            placeholder="••••"
+            class="w-full text-center text-2xl font-bold tracking-[0.4em] bg-slate-50 border-2 border-slate-200 focus:border-amber-500 focus:bg-white rounded-2xl py-3 px-4 text-slate-900 focus:outline-none transition"
+            required
+          />
+          <p class="text-[11px] text-slate-400 mt-1.5">
+            💡 Підказка для своїх: рік народження мами (4 цифри)
+          </p>
+        </div>
+
+        <p id="familyAccessError" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl py-1.5 px-3">
+          Невірний код. Введіть рік народження мами (4 цифри).
+        </p>
+
+        <button
+          type="submit"
+          class="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-amber-600 text-white font-semibold text-xs uppercase tracking-wider shadow-md transition"
+        >
+          Відкрити родинний архів →
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- ==================== TOP HEADER (COMPACT & GLASSMORPHIC) ==================== -->
   <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
@@ -467,7 +517,7 @@
     <div id="lightboxCaption" class="text-left text-xs text-slate-200 max-w-5xl w-full mx-auto bg-slate-900/95 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border border-slate-800 z-10 leading-relaxed max-h-[34dvh] overflow-y-auto space-y-2"></div>
   </div>
 
-  <script src="js/data.js?v=14"></script>
-  <script src="js/app.js?v=14"></script>
+  <script src="js/data.js?v=15"></script>
+  <script src="js/app.js?v=15"></script>
 </body>
 </html>

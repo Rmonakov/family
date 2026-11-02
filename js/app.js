@@ -1115,11 +1115,27 @@ function switchTab(tabName) {
   }
 }
 
-// ==================== INITIALIZATION ====================
-window.addEventListener("DOMContentLoaded", () => {
-  if (typeof lucide !== "undefined") {
-    try { lucide.createIcons(); } catch (e) {}
+// ==================== INITIALIZATION & FAMILY ACCESS GATE ====================
+const FAMILY_AUTH_STORAGE_KEY = "family_archive_auth_v1";
+let portalInitialized = false;
+
+function isFamilyCodeValid(rawInput) {
+  const cleaned = String(rawInput || "").trim();
+  // Код доступу — рік народження мами Ірини Романівни (1952)
+  return cleaned === String(1900 + 52);
+}
+
+function unlockAndInitPortal() {
+  const gate = document.getElementById("familyAccessGate");
+  if (gate) {
+    gate.classList.add("hidden");
   }
+  try {
+    localStorage.setItem(FAMILY_AUTH_STORAGE_KEY, "unlocked_1952");
+  } catch (e) {}
+
+  if (portalInitialized) return;
+  portalInitialized = true;
 
   const quickSelect = document.getElementById("quickPersonSelect");
   if (quickSelect) {
@@ -1145,6 +1161,50 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTimeline("all");
   renderArchiveGallery("all");
   renderMysteryAndDirections();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (typeof lucide !== "undefined") {
+    try { lucide.createIcons(); } catch (e) {}
+  }
+
+  // Перевірка збереженого доступу або показ форми входу
+  let alreadyUnlocked = false;
+  try {
+    alreadyUnlocked = localStorage.getItem(FAMILY_AUTH_STORAGE_KEY) === "unlocked_1952";
+  } catch (e) {}
+
+  if (alreadyUnlocked) {
+    unlockAndInitPortal();
+  } else {
+    const form = document.getElementById("familyAccessForm");
+    const input = document.getElementById("familyAccessInput");
+    const errEl = document.getElementById("familyAccessError");
+
+    setTimeout(() => input?.focus(), 100);
+
+    input?.addEventListener("input", () => {
+      errEl?.classList.add("hidden");
+      if (isFamilyCodeValid(input.value)) {
+        input.blur();
+        unlockAndInitPortal();
+      }
+    });
+
+    form?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (isFamilyCodeValid(input?.value)) {
+        input?.blur();
+        unlockAndInitPortal();
+      } else {
+        errEl?.classList.remove("hidden");
+        if (input) {
+          input.value = "";
+          input.focus();
+        }
+      }
+    });
+  }
 
   // Tab Listeners
   document.querySelectorAll("[data-nav-tab]").forEach(btn => {
