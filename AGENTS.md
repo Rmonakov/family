@@ -13,5 +13,16 @@
 ## Як вносити правки зі слів мами (за 10 секунд)
 Усі біографії, дати, підписи, маршрути та фотографії винесені в один чистий файл **`js/data.js`**:
 - `PEOPLE_DATA` — картки всіх предків (VII–I покоління).
-- `ARCHIVE_GALLERY_ITEMS` — 9 скомпонованих оцифрованих документів та світлин для Lightbox-галереї.
-- `MAP_LOCATIONS` та `MIGRATION_ROUTES` — 15 історичних точок та 4 маршрути міграцій на карті.
+- `ARCHIVE_GALLERY_ITEMS` — скомпоновані оцифровані документи та світлини для Lightbox-галереї.
+- `MAP_LOCATIONS` та `MIGRATION_ROUTES` — історичні точки та маршрути міграцій на карті.
+
+## Автоматична синхронізація з Google Doc та Google Drive («онови з файлу / гуглдоку»)
+Коли користувач просить **«онови з файлу»** або **«онови з гуглдоку»**, інший чат Gemini постійно записує нові генеалогічні оновлення (Оновлення #1, #2, ..., #N) у спільний Google Doc та завантажує нові оцифровані фото у спільну папку Google Drive:
+- **Google Doc зі списком оновлень (`ANTIGRAVITY_SYNC_UPDATE_Shibik_Kyiv_Semipalatinsk.md`)**:
+  - Document ID: `1QSfQRiBZTxp_y9PTpc62nVK7oQ8f-XooCgbdd50lcv4`
+  - URL: `https://docs.google.com/document/d/1QSfQRiBZTxp_y9PTpc62nVK7oQ8f-XooCgbdd50lcv4/edit`
+  - Команда для читання: `gdocs readonly read 1QSfQRiBZTxp_y9PTpc62nVK7oQ8f-XooCgbdd50lcv4`
+- **Спільна папка Google Drive з оцифрованими фото та документами роду**:
+  - Folder ID: `1D_R2FLKA0OnjD-sx1HCiBLx6torqTjxk`
+  - Команда для перегляду файлів: `gdrive readonly ls 1D_R2FLKA0OnjD-sx1HCiBLx6torqTjxk --max 100 --json`
+  - Завантажуйте нові фото через `gdrive readonly download <FILE_ID> --out assets/docs/...`, інтегруйте зміни у `js/data.js` та `index.html`, після чого робіть `git commit` та `git push` на GitHub Pages (`main`).
