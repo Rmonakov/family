@@ -175,9 +175,14 @@ function renderTreeGraph() {
       const p2 = PEOPLE_DATA[conns[1].from];
       const couple = p1 && p2 ? findCoupleLink(p1.id, p2.id) : null;
       if (couple && p1 && p2) {
-        const matchParents = isPersonMatchingFilter(p1, currentBranchFilter) || isPersonMatchingFilter(p2, currentBranchFilter);
+        const match1 = isPersonMatchingFilter(p1, currentBranchFilter);
+        const match2 = isPersonMatchingFilter(p2, currentBranchFilter);
+        const matchParents = match1 || match2;
         const anyDirect = conns.some(c => c.isDirect);
-        const chosenBranch = (conns.find(c => c.isDirect) || conns[0]).branch;
+        let chosenBranch = (conns.find(c => c.isDirect) || conns[0]).branch;
+        if (currentBranchFilter !== "all" && currentBranchFilter !== "direct" && matchParents && matchTarget) {
+          chosenBranch = currentBranchFilter;
+        }
         drawCurve({
           x1: (p1.x + p2.x) / 2,
           y1: (p1.y + p2.y) / 2 + 12,
@@ -218,34 +223,54 @@ function renderTreeGraph() {
 
     const matchA = isPersonMatchingFilter(pA, currentBranchFilter);
     const matchB = isPersonMatchingFilter(pB, currentBranchFilter);
-    const dimmed = !(matchA && matchB);
+    const anyMatch = matchA || matchB;
 
-    const meta = BRANCH_META[cLink.branch] || BRANCH_META.gerlach;
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    if (dimmed) g.setAttribute("class", "tree-link-dimmed");
+    const defaultMeta = BRANCH_META[cLink.branch] || BRANCH_META.gerlach;
+    const activeMeta = (currentBranchFilter !== "all" && currentBranchFilter !== "direct" && BRANCH_META[currentBranchFilter])
+      ? BRANCH_META[currentBranchFilter]
+      : defaultMeta;
 
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", String(pA.x));
-    line.setAttribute("y1", String(pA.y));
-    line.setAttribute("x2", String(pB.x));
-    line.setAttribute("y2", String(pB.y));
-    line.setAttribute("stroke", meta.border);
-    line.setAttribute("stroke-width", "2.5");
-    line.setAttribute("stroke-dasharray", cLink.badge === "✦" ? "5 4" : "none");
-    g.appendChild(line);
-
-    // Midpoint badge between couple cards
     const midX = (pA.x + pB.x) / 2;
     const midY = (pA.y + pB.y) / 2;
+
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+    // Ліва половина шлюбної лінії (від pA до центрального значка 💍)
+    const lineA = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    lineA.setAttribute("x1", String(pA.x));
+    lineA.setAttribute("y1", String(pA.y));
+    lineA.setAttribute("x2", String(midX));
+    lineA.setAttribute("y2", String(midY));
+    lineA.setAttribute("stroke", (matchA && !matchB) ? activeMeta.border : defaultMeta.border);
+    lineA.setAttribute("stroke-width", "2.5");
+    lineA.setAttribute("stroke-opacity", matchA ? "1" : "0.12");
+    lineA.setAttribute("stroke-dasharray", cLink.badge === "✦" ? "5 4" : "none");
+    g.appendChild(lineA);
+
+    // Права половина шлюбної лінії (від центрального значка 💍 до pB)
+    const lineB = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    lineB.setAttribute("x1", String(midX));
+    lineB.setAttribute("y1", String(midY));
+    lineB.setAttribute("x2", String(pB.x));
+    lineB.setAttribute("y2", String(pB.y));
+    lineB.setAttribute("stroke", (matchB && !matchA) ? activeMeta.border : defaultMeta.border);
+    lineB.setAttribute("stroke-width", "2.5");
+    lineB.setAttribute("stroke-opacity", matchB ? "1" : "0.12");
+    lineB.setAttribute("stroke-dasharray", cLink.badge === "✦" ? "5 4" : "none");
+    g.appendChild(lineB);
+
+    // Midpoint badge between couple cards
+    const badgeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    if (!anyMatch) badgeGroup.setAttribute("class", "tree-link-dimmed");
 
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", String(midX));
     circle.setAttribute("cy", String(midY));
     circle.setAttribute("r", "12");
     circle.setAttribute("fill", "#ffffff");
-    circle.setAttribute("stroke", meta.border);
+    circle.setAttribute("stroke", (matchA !== matchB) ? activeMeta.border : defaultMeta.border);
     circle.setAttribute("stroke-width", "2");
-    g.appendChild(circle);
+    badgeGroup.appendChild(circle);
 
     const iconText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     iconText.setAttribute("x", String(midX));
@@ -253,8 +278,9 @@ function renderTreeGraph() {
     iconText.setAttribute("text-anchor", "middle");
     iconText.setAttribute("font-size", "11");
     iconText.textContent = cLink.badge;
-    g.appendChild(iconText);
+    badgeGroup.appendChild(iconText);
 
+    g.appendChild(badgeGroup);
     svgEl.appendChild(g);
   });
 
@@ -301,7 +327,10 @@ function renderTreeGraph() {
 
   // 4. Render Crisp HTML Person Cards
   Object.values(PEOPLE_DATA).forEach(person => {
-    const meta = BRANCH_META[person.branch] || BRANCH_META.gerlach;
+    const effectiveBranch = (currentBranchFilter === "rudenko" && person.id === "irina_rudenko")
+      ? "rudenko"
+      : person.branch;
+    const meta = BRANCH_META[effectiveBranch] || BRANCH_META.gerlach;
     const matched = isPersonMatchingFilter(person, currentBranchFilter);
     const isSelected = currentPersonId === person.id;
 
