@@ -1428,23 +1428,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     try { lucide.createIcons(); } catch (e) {}
   }
 
-  // Перевірка збереженого доступу або показ форми входу
-  let savedPin = "";
-  try {
-    const rawSaved = localStorage.getItem(FAMILY_AUTH_STORAGE_KEY);
-    if (rawSaved) savedPin = atob(rawSaved);
-  } catch (e) {}
-
-  if (savedPin && isFamilyCodeValid(savedPin)) {
-    const unlocked = await unlockAndInitPortal(savedPin);
-    if (unlocked) return;
-  }
-
   const form = document.getElementById("familyAccessForm");
   const input = document.getElementById("familyAccessInput");
   const errEl = document.getElementById("familyAccessError");
-
-  setTimeout(() => input?.focus(), 100);
 
   input?.addEventListener("input", async () => {
     errEl?.classList.add("hidden");
@@ -1625,4 +1611,17 @@ window.addEventListener("DOMContentLoaded", async () => {
       fitTreeToFilter(currentBranchFilter, false);
     }
   });
+
+  // Автоматичне розблокування при збереженому сеансі (після прив'язки всіх кнопок)
+  let savedPin = "";
+  try {
+    const rawSaved = localStorage.getItem(FAMILY_AUTH_STORAGE_KEY);
+    if (rawSaved) savedPin = atob(rawSaved);
+  } catch (e) {}
+
+  if (savedPin && isFamilyCodeValid(savedPin)) {
+    await unlockAndInitPortal(savedPin);
+  } else {
+    setTimeout(() => input?.focus(), 100);
+  }
 });
