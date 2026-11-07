@@ -1,8 +1,8 @@
 {
-  "name": "gerlach-family-tree-portal",
-  "version": "2.0.0",
+  "name": "private-family-archive-portal",
+  "version": "2.1.0",
   "private": true,
-  "description": "Інтерактивне родинне дерево та карта міграцій: Монакови • Руденки • Облажевич (Блажевич) • Петрови • фон Герлах",
+  "description": "Приватний інтерактивний родинний архів (AES-256-GCM)",
   "scripts": {
     "dev": "npx serve .",
     "start": "npx serve ."

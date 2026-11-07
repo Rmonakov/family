@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-  <title>Родинний архів: Герлах • Облажевич • Руденки • Монакови</title>
+  <meta name="referrer" content="no-referrer" />
+  <title>Приватний родинний архів</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,7 +89,7 @@
         <span class="text-[10.5px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">Приватний сімейний портал</span>
         <h2 class="text-xl font-bold font-serif-editorial text-slate-900 mt-2.5">Родинний архів</h2>
         <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-          Герлах • Облажевич • Руденки • Жигаловські • Монакови • Шибик
+          Захищене сховище сімейної історії та документів (AES-256)
         </p>
       </div>
 
@@ -113,7 +114,7 @@
         </div>
 
         <p id="familyAccessError" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl py-1.5 px-3">
-          Невірний код. Введіть рік народження мами (4 цифри).
+          Невірний код доступу. Спробуйте ще раз.
         </p>
 
         <button
@@ -136,10 +137,10 @@
         </div>
         <div class="truncate">
           <h1 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 truncate">
-            Родинний архів <span class="hidden sm:inline font-normal text-slate-500">• Герлах, Облажевич, Руденки, Монакови</span>
+            Родинний архів <span id="headerSurnamesSub" class="hidden sm:inline font-normal text-slate-500"></span>
           </h1>
-          <p class="text-[11px] text-slate-500 truncate">
-            7 поколінь (1805–2026) • Інтерактивне дерево, карта та документи
+          <p id="headerGenSub" class="text-[11px] text-slate-500 truncate">
+            Інтерактивне дерево, карта та документи
           </p>
         </div>
       </div>
@@ -164,7 +165,7 @@
         </button>
         <button data-nav-tab="mystery" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
           <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-600"></i>
-          <span>Історія та Пруссія</span>
+          <span id="navMysteryLabel">Історія роду</span>
         </button>
       </nav>
 
@@ -190,22 +191,22 @@
       <div class="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/90 pointer-events-auto max-w-full">
           <button data-branch-filter="all" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white shadow-sm whitespace-nowrap transition">
-            Усі гілки (33)
+            <span id="branchLabelAll">Усі гілки</span>
           </button>
           <button data-branch-filter="direct" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 whitespace-nowrap transition flex items-center gap-1">
-            <span>✨ Пряма лінія Герлаха</span>
+            <span id="branchLabelDirect">✨ Пряма лінія</span>
           </button>
           <button data-branch-filter="gerlach" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span>Герлах • Облажевич</span>
+            <span id="branchLabelGerlach">Гілка I</span>
           </button>
           <button data-branch-filter="rudenko" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-            <span>Руденки • Жигаловські</span>
+            <span id="branchLabelRudenko">Гілка II</span>
           </button>
           <button data-branch-filter="monakov" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Монакови • Шибик</span>
+            <span id="branchLabelMonakov">Гілка III</span>
           </button>
         </div>
       </div>
@@ -258,8 +259,8 @@
             </div>
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-1.5">
-                <span id="sheetGenBadge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900">V покоління</span>
-                <span id="sheetPlaceBadge" class="text-[11px] text-slate-500 truncate">м. Двінськ</span>
+                <span id="sheetGenBadge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900">Покоління</span>
+                <span id="sheetPlaceBadge" class="text-[11px] text-slate-500 truncate">Місце</span>
               </div>
               <h2 id="sheetName" class="text-base sm:text-lg font-bold text-slate-900 leading-snug mt-1">
                 Ім'я предка
@@ -342,12 +343,12 @@
       <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200/80">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Історична шкала (1805–2005)</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Історична шкала</span>
             <h2 class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
               Хронологія подій та переїздів роду
             </h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">
-              Від родового села Антонів і Пруссії до Двінська, Риги, Сиднея та київських адрес родини.
+            <p id="timelineSubtitle" class="text-xs sm:text-sm text-slate-500 mt-1">
+              Хронологія ключових родинних подій та архівних документів.
             </p>
           </div>
         </div>
@@ -355,11 +356,11 @@
         <!-- Era Filter Pills -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-4 pb-2">
           <button data-era-filter="all" class="era-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі епохи (19)</button>
-          <button data-era-filter="roots" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Коріння (1805–1898)</button>
-          <button data-era-filter="empire" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Двінськ і Яригіно (1908–1916)</button>
+          <button data-era-filter="roots" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Коріння (XIX ст.)</button>
+          <button id="eraBtnEmpire" data-era-filter="empire" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Початок XX ст.</button>
           <button data-era-filter="interwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Міжвоєнні роки (1920–1935)</button>
-          <button data-era-filter="postwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Семипалатинськ, Рига, Сидней (1941–1968)</button>
-          <button data-era-filter="kyiv" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Київські адреси (1963–2005)</button>
+          <button id="eraBtnPostwar" data-era-filter="postwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Повоєнні роки (1941–1968)</button>
+          <button id="eraBtnKyiv" data-era-filter="kyiv" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Сучасний період</button>
         </div>
 
         <!-- Vertical Timeline Container -->
@@ -373,14 +374,14 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-50 border border-sky-200/60 px-2.5 py-1 rounded-lg">Географія роду (19 історичних точок)</span>
-            <h2 class="text-lg sm:text-xl font-bold font-serif-editorial text-slate-900 mt-1.5">
-              Інтерактивна карта переселень: Пруссія • Двінськ • Рига • Сидней • Антонів • Макарово • Семипалатинськ • Київ
+            <h2 id="mapMainTitle" class="text-lg sm:text-xl font-bold font-serif-editorial text-slate-900 mt-1.5">
+              Інтерактивна карта переселень роду
             </h2>
           </div>
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
             <button id="mapFocusEuropeBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-500 whitespace-nowrap transition">🇪🇺 Європа (основні землі)</button>
-            <button id="mapFocusSemeyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 whitespace-nowrap transition">🇰🇿 Семипалатинськ (1941–1944)</button>
-            <button id="mapFocusSydneyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm hover:bg-rose-500 whitespace-nowrap transition">🇦🇺 Сидней (Травень 1968)</button>
+            <button id="mapFocusSemeyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 whitespace-nowrap transition">Східний маршрут</button>
+            <button id="mapFocusSydneyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm hover:bg-rose-500 whitespace-nowrap transition">Океанія</button>
             <button id="mapToggleRoutes" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950 shadow-sm whitespace-nowrap transition">✨ Маршрути: УВІМК.</button>
           </div>
         </div>
@@ -388,18 +389,15 @@
         <!-- Branch Filter Row -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-3 pb-1">
           <button data-map-branch="all" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі лінії (19)</button>
-          <button data-map-branch="gerlach" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Герлах • Облажевич • Сидней (9)</button>
-          <button data-map-branch="rudenko" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Руденки • Жигаловські • Київ (4)</button>
-          <button data-map-branch="monakov" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Монакови • Шибик • Семипалатинськ (6)</button>
+          <button id="mapBranchBtnGerlach" data-map-branch="gerlach" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Гілка I (9)</button>
+          <button id="mapBranchBtnRudenko" data-map-branch="rudenko" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Гілка II (4)</button>
+          <button id="mapBranchBtnMonakov" data-map-branch="monakov" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Гілка III (6)</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-3 items-start">
           <div class="lg:col-span-7 space-y-3">
             <div id="familyLeafletMap" class="w-full h-[380px] sm:h-[500px] rounded-2xl border border-slate-200 shadow-inner bg-slate-100"></div>
-            <div class="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3.5 text-xs text-slate-700 leading-relaxed">
-              <strong class="text-sky-950">🧬 Традиція чергування імен у с. Антонів (Роман ↔ Кирило):</strong>
-              Кирило Руденко (~1775) → Роман Кирилович (~1805) → Кирило Романович (~1835) → Роман Кирилович (~1865) → Кирило Романович (1898, лікар) → Роман Кирилович (1926, дідусь) → Ірина Романівна (1952, мама) → Роман (1985, Ви!).
-            </div>
+            <div id="mapAlternatingNamesBox" class="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3.5 text-xs text-slate-700 leading-relaxed"></div>
           </div>
 
           <div id="mapLocationsList" class="lg:col-span-5 space-y-2.5 max-h-[560px] overflow-y-auto pr-1"></div>
@@ -414,7 +412,7 @@
           <div>
             <span class="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Оцифрований сімейний архів</span>
             <h2 class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
-              Галерея документів та світлин роду (1908–1977 рр.)
+              Галерея документів та світлин роду
             </h2>
             <p class="text-xs sm:text-sm text-slate-500 mt-1">
               Натисніть на будь-яку картку, щоб відкрити скан у повноекранному режимі з вільним масштабуванням (Pinch-to-Zoom).
@@ -422,9 +420,9 @@
           </div>
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
             <button data-gal-filter="all" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі (27)</button>
-            <button data-gal-filter="dvinsk" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Двінськ / Даугавпілс (13)</button>
-            <button data-gal-filter="riga_sydney" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Рига та Сидней (3)</button>
-            <button data-gal-filter="rudenko_monakov" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Руденки • Монакови • Схема (11)</button>
+            <button id="galBtnDvinsk" data-gal-filter="dvinsk" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Колекція I (13)</button>
+            <button id="galBtnRigaSydney" data-gal-filter="riga_sydney" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Колекція II (3)</button>
+            <button id="galBtnRudenkoMonakov" data-gal-filter="rudenko_monakov" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Колекція III (11)</button>
           </div>
         </div>
 
@@ -437,17 +435,17 @@
       <!-- Part 1: 4 Steps of the Family Legend -->
       <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200/80">
         <span class="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Родинний переказ та документи</span>
-        <h2 class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
-          Як прусський рід фон Герлах поєднався з Петровами та Облажевичами
+        <h2 id="mysteryMainTitle" class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
+          Документальна реконструкція родинних переказів
         </h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">
-          Документальна реконструкція за розповіддю бабусі Лариси Олександрівни Руденко, круговою картою мами та фотографіями 1908–1934 рр.:
+        <p id="mysteryMainSubtitle" class="text-xs sm:text-sm text-slate-600 mt-1">
+          Історичні свідчення, сімейні схеми та архівні світлини:
         </p>
 
         <div id="gerlachStepsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5"></div>
 
-        <h3 class="text-base sm:text-lg font-bold font-serif-editorial text-slate-900 mt-7 mb-3">
-          Історичні кандидати: хто з роду фон Герлах був намісником (ландратом) у 1860–1880-х рр.
+        <h3 id="mysteryCandTitle" class="text-base sm:text-lg font-bold font-serif-editorial text-slate-900 mt-7 mb-3">
+          Історичні кандидати та архівні паралелі
         </h3>
         <div id="gerlachCandidatesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
       </div>
@@ -459,8 +457,8 @@
           <h3 class="text-lg sm:text-xl font-bold font-serif-editorial text-slate-900 mt-1.5">
             Що ще можна знайти в архівах та сімейних альбомах
           </h3>
-          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Ключові зачіпки для подальшого розширення дерева роду у Ризі, Сиднеї, Даугавпілсі та Києві.
+          <p id="mysteryDirSubtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Ключові зачіпки для подальшого розширення дерева роду.
           </p>
         </div>
 
@@ -517,7 +515,7 @@
     <div id="lightboxCaption" class="text-left text-xs text-slate-200 max-w-5xl w-full mx-auto bg-slate-900/95 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border border-slate-800 z-10 leading-relaxed max-h-[34dvh] overflow-y-auto space-y-2"></div>
   </div>
 
-  <script src="js/data.js?v=16"></script>
-  <script src="js/app.js?v=16"></script>
+  <script src="js/data.enc.js?v=17"></script>
+  <script src="js/app.js?v=17"></script>
 </body>
 </html>

@@ -19,15 +19,9 @@ const CARD_WIDTH = 228;
 const CARD_HEIGHT = 86;
 
 // ==================== D3.JS + SVG + HTML HYBRID INTERACTIVE TREE ====================
-const GENERATION_BANDS = [
-  { gen: 7, y: 70, label: "VII покоління • поч. XIX ст. (~1805–1815)", shortLabel: "VII пок. • ~1805–1815" },
-  { gen: 6, y: 230, label: "VI покоління • сер. XIX ст. (Пруссія / Двінськ / Антонів)", shortLabel: "VI пок. • сер. XIX ст." },
-  { gen: 5, y: 410, label: "V покоління • кін. XIX ст. (~1865–1886)", shortLabel: "V пок. • ~1865–1886" },
-  { gen: 4, y: 600, label: "IV покоління • поч. XX ст. (1898–1910)", shortLabel: "IV пок. • 1898–1910" },
-  { gen: 3, y: 790, label: "III покоління • Бабусі та дідусі (1926–1931)", shortLabel: "III пок. • 1926–1931" },
-  { gen: 2, y: 960, label: "II покоління • Батьки та сестри (1952–1962)", shortLabel: "II пок. • 1952–1962" },
-  { gen: 1, y: 1130, label: "I покоління • Сучасність (1985)", shortLabel: "I пок. • 1985" }
-];
+function getGenerationBands() {
+  return window.GENERATION_BANDS || [];
+}
 
 function updateGenerationLabelsPosition(transform) {
   const svgEl = document.getElementById("treeSvgLayer");
@@ -66,7 +60,7 @@ function renderTreeGraph() {
   nodesLayer.innerHTML = "";
 
   // 1. Render subtle horizontal Generation Guide Bands & Guide Lines in SVG
-  GENERATION_BANDS.forEach((band, idx) => {
+  getGenerationBands().forEach((band, idx) => {
     const bandGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
     const bandTopY = band.y - 76;
 
@@ -181,7 +175,7 @@ function renderTreeGraph() {
   });
 
   // 3.5. Render Generation Coordinate Labels above Bezier lines (13px above card tops)
-  GENERATION_BANDS.forEach(band => {
+  getGenerationBands().forEach(band => {
     const labelGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
     const labelY = band.y - 56; // 13px вище верхнього краю карток (band.y - 43)
 
@@ -1115,27 +1109,213 @@ function switchTab(tabName) {
   }
 }
 
-// ==================== INITIALIZATION & FAMILY ACCESS GATE ====================
-const FAMILY_AUTH_STORAGE_KEY = "family_archive_auth_v1";
+// ==================== INITIALIZATION & AES-256-GCM FAMILY ACCESS GATE ====================
+const FAMILY_AUTH_STORAGE_KEY = "family_archive_session_v2";
 let portalInitialized = false;
+let unlockInProgress = false;
+
+// Компактний SHA-256 (FIPS 180-4) для миттєвої перевірки солоного хешу перед запуском PBKDF2
+function sha256HexFromBytes(bytes) {
+  const K = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+  ];
+  const rotr = (n, x) => (x >>> n) | (x << (32 - n));
+  const l = bytes.length;
+  const bitLenHi = Math.floor((l * 8) / 0x100000000);
+  const bitLenLo = (l * 8) >>> 0;
+  const padLen = ((l + 9 + 63) & ~63);
+  const buf = new Uint8Array(padLen);
+  buf.set(bytes);
+  buf[l] = 0x80;
+  const dv = new DataView(buf.buffer);
+  dv.setUint32(padLen - 8, bitLenHi, false);
+  dv.setUint32(padLen - 4, bitLenLo, false);
+
+  let H0 = 0x6a09e667, H1 = 0xbb67ae85, H2 = 0x3c6ef372, H3 = 0xa54ff53a;
+  let H4 = 0x510e527f, H5 = 0x9b05688c, H6 = 0x1f83d9ab, H7 = 0x5be0cd19;
+  const W = new Uint32Array(64);
+
+  for (let offset = 0; offset < padLen; offset += 64) {
+    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(offset + i * 4, false);
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(7, W[i - 15]) ^ rotr(18, W[i - 15]) ^ (W[i - 15] >>> 3);
+      const s1 = rotr(17, W[i - 2]) ^ rotr(19, W[i - 2]) ^ (W[i - 2] >>> 10);
+      W[i] = (W[i - 16] + s0 + W[i - 7] + s1) >>> 0;
+    }
+    let a = H0, b = H1, c = H2, d = H3, e = H4, f = H5, g = H6, h = H7;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rotr(6, e) ^ rotr(11, e) ^ rotr(25, e);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
+      const S0 = rotr(2, a) ^ rotr(13, a) ^ rotr(22, a);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) >>> 0;
+      h = g; g = f; f = e; e = (d + temp1) >>> 0;
+      d = c; c = b; b = a; a = (temp1 + temp2) >>> 0;
+    }
+    H0 = (H0 + a) >>> 0; H1 = (H1 + b) >>> 0; H2 = (H2 + c) >>> 0; H3 = (H3 + d) >>> 0;
+    H4 = (H4 + e) >>> 0; H5 = (H5 + f) >>> 0; H6 = (H6 + g) >>> 0; H7 = (H7 + h) >>> 0;
+  }
+  return [H0, H1, H2, H3, H4, H5, H6, H7].map(v => v.toString(16).padStart(8, "0")).join("");
+}
+
+function hexToBytes(hex) {
+  const arr = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return arr;
+}
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    arr[i] = bin.charCodeAt(i);
+  }
+  return arr;
+}
 
 function isFamilyCodeValid(rawInput) {
   const cleaned = String(rawInput || "").trim();
-  // Код доступу — рік народження мами Ірини Романівни (1952)
-  return cleaned === String(1900 + 52);
+  if (cleaned.length !== 4) return false;
+  const bundle = window.ENCRYPTED_FAMILY_ARCHIVE;
+  if (!bundle || !bundle.vsalt || !bundle.vhash) return false;
+  const saltBytes = hexToBytes(bundle.vsalt);
+  const pinBytes = new TextEncoder().encode(cleaned);
+  const combined = new Uint8Array(saltBytes.length + pinBytes.length);
+  combined.set(saltBytes, 0);
+  combined.set(pinBytes, saltBytes.length);
+  return sha256HexFromBytes(combined) === bundle.vhash;
 }
 
-function unlockAndInitPortal() {
+async function decryptAndLoadArchive(rawPin) {
+  if (typeof window.PEOPLE_DATA !== "undefined") return true;
+  const pin = String(rawPin || "").trim();
+  if (!isFamilyCodeValid(pin)) return false;
+
+  const bundle = window.ENCRYPTED_FAMILY_ARCHIVE;
+  if (window.crypto && window.crypto.subtle && bundle && bundle.ct) {
+    const salt = base64ToBytes(bundle.salt);
+    const iv = base64ToBytes(bundle.iv);
+    const ciphertext = base64ToBytes(bundle.ct);
+
+    const keyMaterial = await window.crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(pin),
+      { name: "PBKDF2" },
+      false,
+      ["deriveKey"]
+    );
+
+    const aesKey = await window.crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt,
+        iterations: bundle.iter || 100000,
+        hash: "SHA-256"
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv },
+      aesKey,
+      ciphertext
+    );
+
+    const jsCode = new TextDecoder("utf-8").decode(decryptedBuffer);
+    (new Function(jsCode))();
+    return typeof window.PEOPLE_DATA !== "undefined";
+  }
+
+  // Fallback для локального відкриття file:// у браузерах без crypto.subtle
+  return new Promise((resolve) => {
+    const s = document.createElement("script");
+    s.src = "js/data.js";
+    s.onload = () => resolve(typeof window.PEOPLE_DATA !== "undefined");
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
+function applyPortalUiTexts() {
+  const ui = window.PORTAL_UI_TEXTS;
+  if (!ui) return;
+  if (ui.pageTitle) document.title = ui.pageTitle;
+  const mapText = {
+    headerSurnamesSub: ui.headerSurnamesSub,
+    headerGenSub: ui.headerGenSub,
+    navMysteryLabel: ui.navMysteryLabel,
+    branchLabelAll: ui.branchAll,
+    branchLabelDirect: ui.branchDirect,
+    branchLabelGerlach: ui.branchGerlach,
+    branchLabelRudenko: ui.branchRudenko,
+    branchLabelMonakov: ui.branchMonakov,
+    timelineSubtitle: ui.timelineSubtitle,
+    eraBtnEmpire: ui.eraEmpire,
+    eraBtnPostwar: ui.eraPostwar,
+    eraBtnKyiv: ui.eraKyiv,
+    mapMainTitle: ui.mapTitle,
+    mapFocusSemeyBtn: ui.mapBtnSemey,
+    mapFocusSydneyBtn: ui.mapBtnSydney,
+    mapBranchBtnGerlach: ui.mapBranchGerlach,
+    mapBranchBtnRudenko: ui.mapBranchRudenko,
+    mapBranchBtnMonakov: ui.mapBranchMonakov,
+    galBtnDvinsk: ui.galDvinsk,
+    galBtnRigaSydney: ui.galRigaSydney,
+    galBtnRudenkoMonakov: ui.galRudenkoMonakov,
+    mysteryMainTitle: ui.mysteryMainTitle,
+    mysteryMainSubtitle: ui.mysteryMainSubtitle,
+    mysteryCandTitle: ui.mysteryCandTitle,
+    mysteryDirSubtitle: ui.mysteryDirSubtitle
+  };
+  Object.entries(mapText).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  });
+  const altBox = document.getElementById("mapAlternatingNamesBox");
+  if (altBox && ui.mapAlternatingNamesHtml) {
+    altBox.innerHTML = ui.mapAlternatingNamesHtml;
+  }
+}
+
+async function unlockAndInitPortal(pinCode) {
+  if (portalInitialized || unlockInProgress) return false;
+  unlockInProgress = true;
+  try {
+    const ok = await decryptAndLoadArchive(pinCode);
+    if (!ok) {
+      unlockInProgress = false;
+      return false;
+    }
+  } catch (err) {
+    unlockInProgress = false;
+    return false;
+  }
+
   const gate = document.getElementById("familyAccessGate");
   if (gate) {
     gate.classList.add("hidden");
   }
   try {
-    localStorage.setItem(FAMILY_AUTH_STORAGE_KEY, "unlocked_1952");
+    localStorage.setItem(FAMILY_AUTH_STORAGE_KEY, btoa(String(pinCode).trim()));
   } catch (e) {}
 
-  if (portalInitialized) return;
   portalInitialized = true;
+  unlockInProgress = false;
+
+  applyPortalUiTexts();
 
   const quickSelect = document.getElementById("quickPersonSelect");
   if (quickSelect) {
@@ -1161,50 +1341,55 @@ function unlockAndInitPortal() {
   renderTimeline("all");
   renderArchiveGallery("all");
   renderMysteryAndDirections();
+  return true;
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
   if (typeof lucide !== "undefined") {
     try { lucide.createIcons(); } catch (e) {}
   }
 
   // Перевірка збереженого доступу або показ форми входу
-  let alreadyUnlocked = false;
+  let savedPin = "";
   try {
-    alreadyUnlocked = localStorage.getItem(FAMILY_AUTH_STORAGE_KEY) === "unlocked_1952";
+    const rawSaved = localStorage.getItem(FAMILY_AUTH_STORAGE_KEY);
+    if (rawSaved) savedPin = atob(rawSaved);
   } catch (e) {}
 
-  if (alreadyUnlocked) {
-    unlockAndInitPortal();
-  } else {
-    const form = document.getElementById("familyAccessForm");
-    const input = document.getElementById("familyAccessInput");
-    const errEl = document.getElementById("familyAccessError");
-
-    setTimeout(() => input?.focus(), 100);
-
-    input?.addEventListener("input", () => {
-      errEl?.classList.add("hidden");
-      if (isFamilyCodeValid(input.value)) {
-        input.blur();
-        unlockAndInitPortal();
-      }
-    });
-
-    form?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (isFamilyCodeValid(input?.value)) {
-        input?.blur();
-        unlockAndInitPortal();
-      } else {
-        errEl?.classList.remove("hidden");
-        if (input) {
-          input.value = "";
-          input.focus();
-        }
-      }
-    });
+  if (savedPin && isFamilyCodeValid(savedPin)) {
+    const unlocked = await unlockAndInitPortal(savedPin);
+    if (unlocked) return;
   }
+
+  const form = document.getElementById("familyAccessForm");
+  const input = document.getElementById("familyAccessInput");
+  const errEl = document.getElementById("familyAccessError");
+
+  setTimeout(() => input?.focus(), 100);
+
+  input?.addEventListener("input", async () => {
+    errEl?.classList.add("hidden");
+    const val = input.value;
+    if (isFamilyCodeValid(val)) {
+      input.blur();
+      await unlockAndInitPortal(val);
+    }
+  });
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const val = input?.value || "";
+    if (isFamilyCodeValid(val)) {
+      input?.blur();
+      await unlockAndInitPortal(val);
+    } else {
+      errEl?.classList.remove("hidden");
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
+    }
+  });
 
   // Tab Listeners
   document.querySelectorAll("[data-nav-tab]").forEach(btn => {
