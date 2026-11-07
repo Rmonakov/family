@@ -89,7 +89,128 @@ function renderTreeGraph() {
     svgEl.appendChild(bandGroup);
   });
 
-  // 2. Render Couple horizontal connectors & badges
+  // 2. Render Smooth Cubic Bezier Parent -> Child Connections (routed cleanly from Couple Marriage Nodes)
+  const connsByChild = {};
+  TREE_CONNECTIONS.forEach(conn => {
+    if (!connsByChild[conn.to]) connsByChild[conn.to] = [];
+    connsByChild[conn.to].push(conn);
+  });
+
+  const findCoupleLink = (id1, id2) => COUPLE_LINKS.find(
+    c => (c.a === id1 && c.b === id2) || (c.a === id2 && c.b === id1)
+  );
+
+  const drawCurve = ({ x1, y1, x2, y2, branch, isDirect, isStep, dimmed }) => {
+    const meta = BRANCH_META[branch] || BRANCH_META.gerlach;
+    const midY = y1 + (y2 - y1) * 0.5;
+    const pathData = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathData);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", meta.color);
+
+    const isHighlightedDirect = isDirect && (currentBranchFilter === "direct" || currentBranchFilter === "all");
+    path.setAttribute("stroke-width", isHighlightedDirect ? "3" : "2.2");
+    path.setAttribute("stroke-opacity", dimmed ? "0.12" : (isStep ? "0.55" : "0.82"));
+
+    if (isStep) {
+      path.setAttribute("stroke-dasharray", "5 5");
+    } else if (isDirect && currentBranchFilter === "direct") {
+      path.setAttribute("class", "direct-line-animated");
+    }
+
+    svgEl.appendChild(path);
+  };
+
+  Object.entries(connsByChild).forEach(([targetId, conns]) => {
+    const target = PEOPLE_DATA[targetId];
+    if (!target) return;
+    const x2 = target.x;
+    const y2 = target.y - CARD_HEIGHT / 2 + 2;
+    const matchTarget = isPersonMatchingFilter(target, currentBranchFilter);
+
+    // Спеціальний випадок: Ксенія Петрівна (maria) — від спілки Герлах ✦ Марія та шлюбу Марія 💍 Петро
+    if (targetId === "maria" && conns.length === 3) {
+      const pGerlach = PEOPLE_DATA.gerlach;
+      const pMaria = PEOPLE_DATA.ksenia;
+      const pPyotr = PEOPLE_DATA.pyotr;
+      if (pGerlach && pMaria) {
+        const dimmedBlood = !(
+          (isPersonMatchingFilter(pGerlach, currentBranchFilter) || isPersonMatchingFilter(pMaria, currentBranchFilter)) &&
+          matchTarget
+        );
+        drawCurve({
+          x1: (pGerlach.x + pMaria.x) / 2,
+          y1: (pGerlach.y + pMaria.y) / 2 + 12,
+          x2,
+          y2,
+          branch: "gerlach",
+          isDirect: true,
+          isStep: false,
+          dimmed: dimmedBlood
+        });
+      }
+      if (pMaria && pPyotr) {
+        const dimmedStep = !(
+          isPersonMatchingFilter(pPyotr, currentBranchFilter) && matchTarget
+        );
+        drawCurve({
+          x1: (pMaria.x + pPyotr.x) / 2,
+          y1: (pMaria.y + pPyotr.y) / 2 + 12,
+          x2,
+          y2,
+          branch: "gerlach",
+          isDirect: false,
+          isStep: true,
+          dimmed: dimmedStep
+        });
+      }
+      return;
+    }
+
+    // Якщо у дитини двоє батьків, з'єднаних шлюбним вузлом 💍 — ведемо одну чисту лінію від значка 💍 (без перехрещень!)
+    if (conns.length === 2) {
+      const p1 = PEOPLE_DATA[conns[0].from];
+      const p2 = PEOPLE_DATA[conns[1].from];
+      const couple = p1 && p2 ? findCoupleLink(p1.id, p2.id) : null;
+      if (couple && p1 && p2) {
+        const matchParents = isPersonMatchingFilter(p1, currentBranchFilter) || isPersonMatchingFilter(p2, currentBranchFilter);
+        const anyDirect = conns.some(c => c.isDirect);
+        const chosenBranch = (conns.find(c => c.isDirect) || conns[0]).branch;
+        drawCurve({
+          x1: (p1.x + p2.x) / 2,
+          y1: (p1.y + p2.y) / 2 + 12,
+          x2,
+          y2,
+          branch: chosenBranch,
+          isDirect: anyDirect,
+          isStep: false,
+          dimmed: !(matchParents && matchTarget)
+        });
+        return;
+      }
+    }
+
+    // Одиночний предок -> дитина
+    conns.forEach(conn => {
+      const source = PEOPLE_DATA[conn.from];
+      if (!source) return;
+      const matchSource = isPersonMatchingFilter(source, currentBranchFilter);
+      drawCurve({
+        x1: source.x,
+        y1: source.y + CARD_HEIGHT / 2 - 2,
+        x2,
+        y2,
+        branch: conn.branch,
+        isDirect: Boolean(conn.isDirect),
+        isStep: conn.type === "step",
+        dimmed: !(matchSource && matchTarget)
+      });
+    });
+  });
+
+  // 3. Render Couple horizontal connectors & badges on top of curve origins
   COUPLE_LINKS.forEach(cLink => {
     const pA = PEOPLE_DATA[cLink.a];
     const pB = PEOPLE_DATA[cLink.b];
@@ -135,43 +256,6 @@ function renderTreeGraph() {
     g.appendChild(iconText);
 
     svgEl.appendChild(g);
-  });
-
-  // 3. Render Smooth Cubic Bezier Parent -> Child Connections
-  TREE_CONNECTIONS.forEach(conn => {
-    const source = PEOPLE_DATA[conn.from];
-    const target = PEOPLE_DATA[conn.to];
-    if (!source || !target) return;
-
-    const matchSource = isPersonMatchingFilter(source, currentBranchFilter);
-    const matchTarget = isPersonMatchingFilter(target, currentBranchFilter);
-    const dimmed = !(matchSource && matchTarget);
-
-    const meta = BRANCH_META[conn.branch] || BRANCH_META.gerlach;
-    const x1 = source.x;
-    const y1 = source.y + CARD_HEIGHT / 2 - 2;
-    const x2 = target.x;
-    const y2 = target.y - CARD_HEIGHT / 2 + 2;
-    const midY = y1 + (y2 - y1) * 0.52;
-
-    const pathData = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", pathData);
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", meta.color);
-
-    const isHighlightedDirect = conn.isDirect && (currentBranchFilter === "direct" || currentBranchFilter === "all");
-    path.setAttribute("stroke-width", isHighlightedDirect ? "3" : "2");
-    path.setAttribute("stroke-opacity", dimmed ? "0.12" : (conn.type === "step" ? "0.55" : "0.78"));
-
-    if (conn.type === "step") {
-      path.setAttribute("stroke-dasharray", "5 5");
-    } else if (conn.isDirect && currentBranchFilter === "direct") {
-      path.setAttribute("class", "direct-line-animated");
-    }
-
-    svgEl.appendChild(path);
   });
 
   // 3.5. Render Generation Coordinate Labels above Bezier lines (13px above card tops)
@@ -240,12 +324,7 @@ function renderTreeGraph() {
     }
 
     const initial = (person.shortName || person.name || "Р").trim().charAt(0);
-    const avatarHtml = person.photo && person.secondPhoto
-      ? `<div class="flex items-center gap-0.5 flex-shrink-0">
-          <img src="${person.photo}" alt="${person.shortName}" class="w-9 h-14 object-cover object-center rounded-l-xl border border-slate-200 bg-slate-100" loading="lazy" />
-          <img src="${person.secondPhoto}" alt="${person.shortName}" class="w-9 h-14 object-cover object-center rounded-r-xl border border-slate-200 bg-slate-100" loading="lazy" />
-        </div>`
-      : person.photo
+    const avatarHtml = person.photo
       ? `<img src="${person.photo}" alt="${person.shortName}" class="w-12 h-14 object-cover object-center rounded-xl border border-slate-200 flex-shrink-0 bg-slate-100" loading="lazy" />`
       : `<div class="w-11 h-12 rounded-xl flex items-center justify-center font-serif-editorial font-bold text-base flex-shrink-0 border" style="background-color: ${meta.bgLight}; color: ${meta.badgeText}; border-color: ${meta.border}">${initial}</div>`;
 
@@ -261,7 +340,7 @@ function renderTreeGraph() {
             ${person.genRoman.replace(" покоління", " пок.")}
           </span>
           <div class="flex items-center gap-1 text-[10px]">
-            ${person.photo ? '<span title="Є архівне фото">📷</span>' : ''}
+            ${person.photo && person.secondPhoto ? '<span title="2 архівні портрети (відкрийте картку)">📷×2</span>' : (person.photo ? '<span title="Є архівне фото">📷</span>' : '')}
             ${person.docImage ? '<span title="Є оцифрований документ">📜</span>' : ''}
           </div>
         </div>
