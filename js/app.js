@@ -630,25 +630,55 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
   // Document Preview & Hint to open Fullscreen Lightbox for itemized breakdown
   const docBox = document.getElementById("sheetDocBox");
   const docImg = document.getElementById("sheetDocImg");
+  const docTitleEl = document.getElementById("sheetDocTitle");
+  const docDescEl = document.getElementById("sheetDocDesc");
+  const docTechEl = document.getElementById("sheetDocTechBox");
   const legendHint = document.getElementById("sheetPhotoLegendHint");
   if (person.docImage) {
     docImg.src = person.docImage;
     docBox.classList.remove("hidden");
     const metaForDoc = findPhotoDetails(person.docImage, person);
+    const resolvedTitle = person.docTitle || metaForDoc.title || "Оцифрований документ / знімок";
+    const resolvedDesc = person.docDesc || metaForDoc.desc || "";
+    const resolvedTech = person.docTechNotes || metaForDoc.techNotes || "";
+
+    if (docTitleEl) {
+      docTitleEl.textContent = resolvedTitle;
+    }
+    if (docDescEl) {
+      if (resolvedDesc) {
+        docDescEl.textContent = resolvedDesc;
+        docDescEl.classList.remove("hidden");
+      } else {
+        docDescEl.textContent = "";
+        docDescEl.classList.add("hidden");
+      }
+    }
     if (legendHint) {
       if (metaForDoc.photoLegend && metaForDoc.photoLegend.length > 0) {
         legendHint.classList.remove("hidden");
-        legendHint.onclick = () => openLightbox(person.docImage, person.name, person.generation, person.facts);
+        legendHint.onclick = () => openLightbox(person.docImage, resolvedTitle, person.generation, resolvedDesc || person.facts);
       } else {
         legendHint.classList.add("hidden");
+      }
+    }
+    if (docTechEl) {
+      if (resolvedTech) {
+        docTechEl.innerHTML = `<strong class="text-slate-700">🔬 Технічні деталі / напис на звороті цього знімка:</strong> ${resolvedTech}`;
+        docTechEl.classList.remove("hidden");
+      } else {
+        docTechEl.innerHTML = "";
+        docTechEl.classList.add("hidden");
       }
     }
   } else {
     docBox.classList.add("hidden");
     if (legendHint) legendHint.classList.add("hidden");
+    if (docDescEl) docDescEl.classList.add("hidden");
+    if (docTechEl) docTechEl.classList.add("hidden");
   }
 
-  // Extra Documents / Back Side / AI Reconstructed Portrait
+  // Extra Documents / Back Side / AI Reconstructed Portrait (each with its own attached techNotes)
   const extraBox = document.getElementById("sheetExtraDocsBox");
   if (extraBox) {
     extraBox.innerHTML = "";
@@ -656,40 +686,29 @@ function selectPerson(personId, options = { center: true, openSheet: true }) {
     if (extras.length > 0) {
       extraBox.classList.remove("hidden");
       extras.forEach(ex => {
-        const exMeta = findPhotoDetails(ex.img);
+        const exMeta = findPhotoDetails(ex.img, person);
         const hasGroupLegend = exMeta.photoLegend && exMeta.photoLegend.length > 0;
+        const exTech = ex.techNotes !== undefined ? ex.techNotes : (exMeta.techNotes || "");
         const card = document.createElement("div");
         card.className = "bg-slate-50 rounded-2xl p-3 border border-slate-200/80 space-y-2";
         card.innerHTML = `
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-semibold text-slate-800">${ex.title}</span>
-            <button type="button" class="text-[11px] font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap">🔍 На весь екран</button>
+          <div class="flex items-start justify-between gap-2">
+            <span class="text-xs font-semibold text-slate-800 leading-snug">${ex.title}</span>
+            <button type="button" class="text-[11px] font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap flex-shrink-0">🔍 На весь екран</button>
           </div>
           <img src="${ex.img}" alt="${ex.title}" class="w-full max-h-52 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
           <p class="text-[11.5px] text-slate-600 leading-relaxed">${ex.desc || ""}</p>
           ${hasGroupLegend ? `<div class="text-[11px] font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/70 rounded-lg px-2.5 py-1 cursor-pointer">👥 Натисніть на фото, щоб побачити детальний опис хто де стоїть (${exMeta.photoLegend.length}) →</div>` : ""}
+          ${exTech ? `<div class="pt-2 border-t border-slate-200/80 text-[11px] text-slate-600 leading-relaxed"><strong class="text-slate-700">🔬 Технічні деталі / напис на звороті цього документа:</strong> ${exTech}</div>` : ""}
         `;
         const openEx = () => openLightbox(ex.img, ex.title, person.generation, ex.desc || person.facts);
-        card.querySelector("button")?.addEventListener("click", openEx);
-        card.querySelector("img")?.addEventListener("click", openEx);
+        card.querySelector("button")?.addEventListener("click", (e) => { e.stopPropagation(); openEx(); });
+        card.querySelector("img")?.addEventListener("click", (e) => { e.stopPropagation(); openEx(); });
         card.addEventListener("click", openEx);
         extraBox.appendChild(card);
       });
     } else {
       extraBox.classList.add("hidden");
-    }
-  }
-
-  // Technical Photo & Back-Side Inscription Details (Separated at Bottom)
-  const techBox = document.getElementById("sheetTechNotesBox");
-  const techText = document.getElementById("sheetTechNotesText");
-  if (techBox && techText) {
-    if (person.techNotes) {
-      techBox.classList.remove("hidden");
-      techText.textContent = person.techNotes;
-    } else {
-      techBox.classList.add("hidden");
-      techText.textContent = "";
     }
   }
 
@@ -977,40 +996,64 @@ function focusMapOnLocation(locId) {
 // ==================== ARCHIVE GALLERY & ZOOMABLE LIGHTBOX ====================
 function findPhotoDetails(imgSrc, fallbackPerson = null) {
   const cleanSrc = String(imgSrc || "").split("?")[0];
-  if (!cleanSrc) return { photoLegend: [], techNotes: "", desc: "" };
+  if (!cleanSrc) return { photoLegend: [], techNotes: "", desc: "", title: "" };
 
   const galMatch = ARCHIVE_GALLERY_ITEMS.find(item => String(item.img || "").split("?")[0] === cleanSrc);
-  if (galMatch && ((galMatch.photoLegend && galMatch.photoLegend.length > 0) || galMatch.techNotes)) {
+  const extraMatch = fallbackPerson && Array.isArray(fallbackPerson.extraDocs)
+    ? fallbackPerson.extraDocs.find(e => String(e.img || "").split("?")[0] === cleanSrc)
+    : null;
+  const isFallbackMainDoc = fallbackPerson && String(fallbackPerson.docImage || "").split("?")[0] === cleanSrc;
+
+  if (galMatch) {
     return {
-      photoLegend: galMatch.photoLegend || [],
-      techNotes: galMatch.techNotes || "",
-      desc: galMatch.desc || "",
+      photoLegend: galMatch.photoLegend || (isFallbackMainDoc ? (fallbackPerson.photoLegend || []) : []),
+      techNotes: (extraMatch && extraMatch.techNotes !== undefined)
+        ? extraMatch.techNotes
+        : (isFallbackMainDoc && fallbackPerson.docTechNotes !== undefined
+          ? fallbackPerson.docTechNotes
+          : (galMatch.techNotes || "")),
+      desc: (extraMatch && extraMatch.desc) || (isFallbackMainDoc && fallbackPerson.docDesc) || galMatch.desc || "",
       badge: galMatch.badge || "",
-      title: galMatch.title || ""
+      title: (extraMatch && extraMatch.title) || (isFallbackMainDoc && fallbackPerson.docTitle) || galMatch.title || ""
     };
   }
 
-  if (fallbackPerson && String(fallbackPerson.docImage || "").split("?")[0] === cleanSrc) {
+  if (extraMatch) {
+    return {
+      photoLegend: extraMatch.photoLegend || [],
+      techNotes: extraMatch.techNotes || "",
+      desc: extraMatch.desc || "",
+      badge: fallbackPerson?.generation || "",
+      title: extraMatch.title || ""
+    };
+  }
+
+  if (isFallbackMainDoc) {
     return {
       photoLegend: fallbackPerson.photoLegend || [],
-      techNotes: fallbackPerson.techNotes || "",
-      desc: fallbackPerson.facts || ""
+      techNotes: fallbackPerson.docTechNotes || fallbackPerson.techNotes || "",
+      desc: fallbackPerson.docDesc || "",
+      badge: fallbackPerson.generation || "",
+      title: fallbackPerson.docTitle || ""
     };
   }
 
-  const personMatch = Object.values(PEOPLE_DATA).find(p => String(p.docImage || "").split("?")[0] === cleanSrc && p.photoLegend);
+  const personMatch = Object.values(PEOPLE_DATA).find(p => String(p.docImage || "").split("?")[0] === cleanSrc);
   if (personMatch) {
     return {
       photoLegend: personMatch.photoLegend || [],
-      techNotes: personMatch.techNotes || "",
-      desc: personMatch.facts || ""
+      techNotes: personMatch.docTechNotes || personMatch.techNotes || "",
+      desc: personMatch.docDesc || "",
+      badge: personMatch.generation || "",
+      title: personMatch.docTitle || ""
     };
   }
 
   return {
-    photoLegend: galMatch?.photoLegend || [],
-    techNotes: galMatch?.techNotes || "",
-    desc: galMatch?.desc || ""
+    photoLegend: [],
+    techNotes: "",
+    desc: "",
+    title: ""
   };
 }
 
