@@ -1,0 +1,11 @@
+{
+  "name": "private-archive-portal",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Static encrypted archive portal (AES-256-GCM + PBKDF2-SHA256)",
+  "scripts": {
+    "build:css": "./scripts/tailwindcss --content 'index.html,js/app.js,js/data.js' -o vendor/tailwind.min.css --minify",
+    "encrypt": "python3 scripts/encrypt_data.py",
+    "preflight": "bash scripts/preflight.sh"
+  }
+}

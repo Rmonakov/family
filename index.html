@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.basemaps.cartocdn.com; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="referrer" content="strict-origin" />
+  <title>Приватний родинний архів</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="vendor/tailwind.min.css?v=27" />
+  <link rel="stylesheet" href="vendor/leaflet.css?v=27" />
+  <script src="vendor/leaflet.js?v=27"></script>
+  <script src="vendor/d3.min.js?v=27"></script>
+  <script src="vendor/gsap.min.js?v=27"></script>
+  <script src="vendor/panzoom.min.js?v=27"></script>
+  <script src="vendor/lucide.min.js?v=27"></script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+    .font-serif-editorial {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    .canvas-grid-bg {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.15px, transparent 1.15px);
+      background-size: 24px 24px;
+    }
+    .tree-node-card {
+      width: 228px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.25s ease, transform 0.2s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .tree-node-card:hover {
+      box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.12), 0 4px 8px -4px rgba(15, 23, 42, 0.06);
+    }
+    .tree-node-selected {
+      box-shadow: 0 0 0 3px #d97706, 0 16px 32px -8px rgba(217, 119, 6, 0.28) !important;
+      z-index: 30 !important;
+    }
+    .tree-node-dimmed {
+      opacity: 0.22;
+      filter: grayscale(40%);
+    }
+    .tree-link-dimmed {
+      opacity: 0.12;
+    }
+    @keyframes flowDash {
+      to {
+        stroke-dashoffset: -24;
+      }
+    }
+    .direct-line-animated {
+      stroke-dasharray: 8 4;
+      animation: flowDash 1.4s linear infinite;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Fix Leaflet z-index inside modern flex/grid layout */
+    .leaflet-pane { z-index: 10 !important; }
+    .leaflet-top, .leaflet-bottom { z-index: 20 !important; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900 pb-16 md:pb-0">
+
+  <!-- ==================== FAMILY ACCESS GATE (PASSPHRASE LOCK) ==================== -->
+  <div id="familyAccessGate" class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex items-center justify-center p-4 select-none">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl border border-slate-200/90 text-center space-y-5">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md flex items-center justify-center mx-auto">
+        <i data-lucide="lock" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <span class="text-[10.5px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">Приватний сімейний портал</span>
+        <h2 class="text-xl font-bold font-serif-editorial text-slate-900 mt-2.5">Родинний архів</h2>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          Захищене сховище сімейної історії та документів (AES-256-GCM)
+        </p>
+      </div>
+
+      <form id="familyAccessForm" class="space-y-3.5" autocomplete="off">
+        <div class="text-left">
+          <label for="familyAccessInput" class="block text-xs font-semibold text-slate-700 mb-1.5 text-center">
+            Введіть парольну фразу доступу:
+          </label>
+          <input
+            id="familyAccessInput"
+            type="password"
+            autocomplete="current-password"
+            minlength="8"
+            placeholder="••••••••••••"
+            class="w-full text-center text-base font-semibold tracking-wider bg-slate-50 border-2 border-slate-200 focus:border-amber-500 focus:bg-white rounded-2xl py-3 px-4 text-slate-900 focus:outline-none transition"
+            required
+          />
+        </div>
+
+        <label class="flex items-center justify-center gap-2 text-xs text-slate-600 cursor-pointer select-none pt-0.5">
+          <input id="familyRememberDevice" type="checkbox" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
+          <span>Запам'ятати на цьому пристрої</span>
+        </label>
+
+        <p id="familyAccessError" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl py-1.5 px-3">
+          Невірна парольна фраза. Спробуйте ще раз.
+        </p>
+
+        <button
+          id="familyAccessSubmitBtn"
+          type="submit"
+          class="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-amber-600 disabled:opacity-50 disabled:pointer-events-none text-white font-semibold text-xs uppercase tracking-wider shadow-md transition"
+        >
+          Відкрити родинний архів →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== TOP HEADER (COMPACT & GLASSMORPHIC) ==================== -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+      <!-- Brand / Clean Heritage Emblem -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-sm flex items-center justify-center flex-shrink-0" title="Родинне дерево та архів">
+          <i data-lucide="trees" class="w-5 h-5"></i>
+        </div>
+        <div class="truncate">
+          <h1 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 truncate">
+            Родинний архів <span id="headerSurnamesSub" class="hidden sm:inline font-normal text-slate-500"></span>
+          </h1>
+          <p id="headerGenSub" class="text-[11px] text-slate-500 truncate">
+            Інтерактивне дерево, карта та документи
+          </p>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation Pills -->
+      <nav class="hidden md:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/70" aria-label="Основна навігація">
+        <button data-nav-tab="tree" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-sm transition flex items-center gap-1.5">
+          <i data-lucide="git-fork" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>Дерево роду</span>
+        </button>
+        <button data-nav-tab="timeline" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+          <span>Таймлайн</span>
+        </button>
+        <button data-nav-tab="map" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+          <span>Карта роду</span>
+        </button>
+        <button data-nav-tab="archive" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="images" class="w-3.5 h-3.5"></i>
+          <span>Документи (36)</span>
+        </button>
+        <button data-nav-tab="mystery" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span id="navMysteryLabel">Історія роду</span>
+        </button>
+      </nav>
+
+      <!-- Quick Person Jump / Search Select + Lock Button -->
+      <div class="flex items-center gap-1.5">
+        <div class="relative">
+          <select id="quickPersonSelect" aria-label="Швидкий перехід до предка" class="appearance-none bg-slate-100 hover:bg-slate-200/70 text-slate-800 text-xs font-medium rounded-xl pl-3 pr-7 py-2 border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-amber-500/40 max-w-[140px] sm:max-w-[205px] truncate cursor-pointer">
+            <option value="">🔍 Знайти предка...</option>
+          </select>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
+        </div>
+        <button id="lockArchiveBtn" type="button" title="Заблокувати архів і вийти" class="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-600 border border-slate-200/80 transition flex items-center gap-1 text-xs font-medium">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+          <span class="hidden lg:inline">Вийти</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <main class="flex-1 flex flex-col relative">
+
+    <!-- ==================== VIEW 1: INTERACTIVE D3 FAMILY TREE ==================== -->
+    <section id="view-tree" class="relative flex-1 flex flex-col h-[calc(100dvh-7.5rem)] md:h-[calc(100dvh-4rem)] overflow-hidden">
+
+      <!-- Floating Top Filter Pills (Branch Focus) -->
+      <div class="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/90 pointer-events-auto max-w-full">
+          <button data-branch-filter="all" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white shadow-sm whitespace-nowrap transition">
+            <span id="branchLabelAll">Усі гілки</span>
+          </button>
+          <button data-branch-filter="direct" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 whitespace-nowrap transition flex items-center gap-1">
+            <span id="branchLabelDirect">✨ Пряма лінія</span>
+          </button>
+          <button data-branch-filter="gerlach" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span id="branchLabelGerlach">Гілка I</span>
+          </button>
+          <button data-branch-filter="rudenko" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <span id="branchLabelRudenko">Гілка II</span>
+          </button>
+          <button data-branch-filter="monakov" class="branch-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="branchLabelMonakov">Гілка III</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive D3 Zoom & Pan Viewport -->
+      <div id="treeViewport" class="flex-1 w-full h-full canvas-grid-bg relative overflow-hidden cursor-grab active:cursor-grabbing touch-none select-none">
+        <!-- Transformed Layer (driven by d3.zoom) -->
+        <div id="treeZoomLayer" class="absolute top-0 left-0 origin-top-left will-change-transform" style="width: 2900px; height: 1260px;">
+          <!-- SVG Layer for Generation Bands, Bezier Connections & Marriage Badges -->
+          <svg id="treeSvgLayer" width="2900" height="1260" class="absolute inset-0 pointer-events-none overflow-visible"></svg>
+          <!-- HTML Layer for Crisp Editorial Node Cards -->
+          <div id="treeNodesLayer" class="absolute inset-0 pointer-events-none"></div>
+        </div>
+      </div>
+
+      <!-- Floating Bottom-Left Helper Hint (Mobile/Desktop) -->
+      <div class="absolute bottom-3 left-3 z-20 pointer-events-none hidden sm:flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-sm text-xs text-slate-600">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Масштабуйте двома пальцями або коліщатком • Натисніть на картку предка для деталей</span>
+      </div>
+
+      <!-- Floating Bottom-Right Zoom & Fit Dock -->
+      <div class="absolute bottom-3 right-3 z-20 flex items-center gap-1 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl shadow-md border border-slate-200/90">
+        <button id="treeZoomOutBtn" type="button" title="Зменшити" class="w-8 h-8 rounded-xl hover:bg-slate-100 active:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition">−</button>
+        <span id="treeZoomLabel" class="text-[11px] font-mono font-semibold text-slate-600 min-w-[42px] text-center">100%</span>
+        <button id="treeZoomInBtn" type="button" title="Збільшити" class="w-8 h-8 rounded-xl hover:bg-slate-100 active:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition">+</button>
+        <div class="w-px h-5 bg-slate-200 mx-0.5"></div>
+        <button id="treeFitBtn" type="button" title="Вписати дерево в екран" class="px-2.5 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 text-xs font-semibold flex items-center gap-1 transition">
+          <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+          <span>Вписати</span>
+        </button>
+      </div>
+
+      <!-- ==================== PERSON DETAILS SHEET (BOTTOM SHEET ON MOBILE / RIGHT DRAWER ON DESKTOP) ==================== -->
+      <div id="personSheetBackdrop" class="fixed inset-0 bg-slate-900/25 backdrop-blur-[1px] z-40 hidden opacity-0 transition-opacity duration-200 md:hidden"></div>
+
+      <aside id="personSheet" aria-label="Картка предка" class="fixed md:absolute z-40 left-0 right-0 bottom-0 md:left-auto md:top-16 md:bottom-4 md:right-4 md:w-[410px] bg-white rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col max-h-[84dvh] md:max-h-[calc(100%-5rem)] translate-y-full md:translate-y-0 md:translate-x-[450px] transition-transform duration-300 ease-out overflow-hidden">
+        <!-- Mobile Drag Handle -->
+        <div id="personSheetGrabber" class="w-full pt-2 pb-0.5 flex justify-center md:hidden cursor-pointer flex-shrink-0">
+          <div class="w-10 h-1.5 rounded-full bg-slate-300"></div>
+        </div>
+
+        <!-- Compact Sticky Top Bar (Never blocks mobile viewport when scrolling) -->
+        <div class="px-4 sm:px-5 py-2.5 border-b border-slate-100 flex items-center justify-between gap-2 flex-shrink-0 bg-white/95 backdrop-blur-sm">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="sheetGenBadge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 flex-shrink-0">Покоління</span>
+            <span id="sheetPlaceBadge" class="text-xs text-slate-500 truncate">Місце</span>
+          </div>
+          <button id="closePersonSheetBtn" type="button" aria-label="Закрити картку" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0 transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Sheet Scrollable Content (Includes Hero Avatars & Full Name so scrolling uses full sheet height) -->
+        <div id="personSheetScrollBody" class="flex-1 overflow-y-auto px-4 pt-3.5 pb-5 sm:p-5 space-y-4 text-sm">
+          <!-- Person Hero Header (Avatars + Full Name) -->
+          <div id="sheetHeroWrap" class="flex items-center gap-3 pb-3 border-b border-slate-100">
+            <div id="sheetAvatarsGroup" class="flex items-center gap-2.5 flex-shrink-0">
+              <img id="sheetPhoto" src="" alt="" class="hidden w-14 h-16 object-cover rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 bg-slate-100 cursor-pointer" title="Натисніть для збільшення" />
+              <img id="sheetSecondPhoto" src="" alt="" class="hidden w-14 h-16 object-cover rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 bg-slate-100 cursor-pointer" title="Натисніть для збільшення" />
+              <div id="sheetAvatarFallback" class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 font-serif-editorial font-bold text-lg flex items-center justify-center flex-shrink-0">
+                Р
+              </div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 id="sheetName" class="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                Ім'я предка
+              </h2>
+            </div>
+          </div>
+          <!-- Quick Action: Show on Family Map -->
+          <div class="flex items-center justify-between gap-2">
+            <button id="sheetShowOnMapBtn" type="button" class="w-full py-2 px-3.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200/80 text-xs font-semibold flex items-center justify-center gap-2 transition">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-sky-600"></i>
+              <span>Показати це місце на інтерактивній карті роду →</span>
+            </button>
+          </div>
+
+          <!-- Quick Family Connections (Parents / Spouse / Children) -->
+          <div id="sheetRelativesBox" class="hidden">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Пов'язані родичі (натисніть для переходу)</div>
+            <div id="sheetRelativesList" class="flex flex-wrap gap-1.5"></div>
+          </div>
+
+          <!-- Archival Document / Photo Preview -->
+          <div id="sheetDocBox" class="hidden bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <span class="text-xs font-semibold text-slate-800 flex items-start gap-1.5 leading-snug">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                <span id="sheetDocTitle">Оцифрований документ / знімок</span>
+              </span>
+              <button id="sheetOpenLightboxBtn" type="button" class="text-[11px] font-semibold text-amber-700 hover:text-amber-900 flex items-center gap-1 whitespace-nowrap flex-shrink-0">
+                <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+                <span>На весь екран</span>
+              </button>
+            </div>
+            <img id="sheetDocImg" src="" alt="Архівний документ" class="w-full max-h-56 object-contain rounded-xl bg-white border border-slate-200/70 p-1 cursor-pointer hover:opacity-95 transition" />
+            <p id="sheetDocDesc" class="hidden mt-2 text-[11.5px] text-slate-600 leading-relaxed"></p>
+
+            <!-- Hint to click photo for full-screen itemized breakdown -->
+            <div id="sheetPhotoLegendHint" class="hidden mt-2 flex items-center justify-between gap-2 bg-amber-50/90 border border-amber-200/80 rounded-xl px-2.5 py-1.5 text-[11.5px] text-amber-950 cursor-pointer hover:bg-amber-100/80 transition">
+              <span>👥 <strong>Груповий знімок:</strong> натисніть на фото, щоб збільшити та прочитати поіменний опис хто де стоїть</span>
+              <span class="font-bold text-amber-700 whitespace-nowrap">🔍 Відкрити →</span>
+            </div>
+
+            <!-- Technical details attached directly to this primary photo/document -->
+            <div id="sheetDocTechBox" class="hidden mt-2 pt-2 border-t border-slate-200/80 text-[11px] text-slate-600 leading-relaxed"></div>
+          </div>
+
+          <!-- Biography / Facts (Primary Human Narrative at Top) -->
+          <div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Біографія та родинна історія</div>
+            <p id="sheetFacts" class="text-slate-700 leading-relaxed text-[13.5px]"></p>
+          </div>
+
+          <!-- Extra Documents / Back Side / AI Reconstructed Portrait (each with its own attached techNotes) -->
+          <div id="sheetExtraDocsBox" class="hidden space-y-2.5"></div>
+
+          <!-- Research Clues / Questions -->
+          <div id="sheetCluesBox" class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5">
+            <div class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+              <i data-lucide="compass" class="w-4 h-4 text-amber-600"></i>
+              <span>Архівні орієнтири та деталі</span>
+            </div>
+            <ul id="sheetCluesList" class="mt-2 space-y-1.5 text-xs text-amber-950/90 list-disc pl-4 leading-relaxed"></ul>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ==================== VIEW 2: VISUAL INTERACTIVE TIMELINE ==================== -->
+    <section id="view-timeline" class="hidden flex-1 max-w-4xl w-full mx-auto px-4 py-6 sm:px-6 space-y-6">
+      <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200/80">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Історична шкала</span>
+            <h2 class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
+              Хронологія подій та переїздів роду
+            </h2>
+            <p id="timelineSubtitle" class="text-xs sm:text-sm text-slate-500 mt-1">
+              Хронологія ключових родинних подій та архівних документів.
+            </p>
+          </div>
+        </div>
+
+        <!-- Era Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-4 pb-2">
+          <button data-era-filter="all" class="era-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі епохи (20)</button>
+          <button data-era-filter="roots" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Коріння (XIX ст.)</button>
+          <button id="eraBtnEmpire" data-era-filter="empire" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Початок XX ст.</button>
+          <button data-era-filter="interwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Міжвоєнні роки (1920–1935)</button>
+          <button id="eraBtnPostwar" data-era-filter="postwar" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Повоєнні роки (1941–1968)</button>
+          <button id="eraBtnKyiv" data-era-filter="kyiv" class="era-pill px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Сучасний період</button>
+        </div>
+
+        <!-- Vertical Timeline Container -->
+        <div id="timelineListContainer" class="relative mt-6 pl-6 sm:pl-8 border-l-2 border-slate-200 space-y-6"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: INTERACTIVE MIGRATION MAP ==================== -->
+    <section id="view-map" class="hidden flex-1 max-w-7xl w-full mx-auto px-3 py-5 sm:px-6 space-y-5">
+      <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/80">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-50 border border-sky-200/60 px-2.5 py-1 rounded-lg">Географія роду (19 історичних точок)</span>
+            <h2 id="mapMainTitle" class="text-lg sm:text-xl font-bold font-serif-editorial text-slate-900 mt-1.5">
+              Інтерактивна карта переселень роду
+            </h2>
+          </div>
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            <button id="mapFocusEuropeBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-500 whitespace-nowrap transition">🇪🇺 Європа (основні землі)</button>
+            <button id="mapFocusSemeyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 whitespace-nowrap transition">Східний маршрут</button>
+            <button id="mapFocusSydneyBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm hover:bg-rose-500 whitespace-nowrap transition">Океанія</button>
+            <button id="mapToggleRoutes" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950 shadow-sm whitespace-nowrap transition">✨ Маршрути: УВІМК.</button>
+          </div>
+        </div>
+
+        <!-- Branch Filter Row -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-3 pb-1">
+          <button data-map-branch="all" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі лінії (19)</button>
+          <button id="mapBranchBtnGerlach" data-map-branch="gerlach" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Гілка I (9)</button>
+          <button id="mapBranchBtnRudenko" data-map-branch="rudenko" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Гілка II (4)</button>
+          <button id="mapBranchBtnMonakov" data-map-branch="monakov" class="map-branch-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Гілка III (6)</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-3 items-start">
+          <div class="lg:col-span-7 space-y-3">
+            <div id="familyLeafletMap" class="w-full h-[380px] sm:h-[500px] rounded-2xl border border-slate-200 shadow-inner bg-slate-100"></div>
+            <div id="mapAlternatingNamesBox" class="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3.5 text-xs text-slate-700 leading-relaxed"></div>
+          </div>
+
+          <div id="mapLocationsList" class="lg:col-span-5 space-y-2.5 max-h-[560px] overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: ARCHIVE DOCUMENT GALLERY ==================== -->
+    <section id="view-archive" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 space-y-6">
+      <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200/80">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-5">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Оцифрований сімейний архів</span>
+            <h2 class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
+              Галерея документів та світлин роду
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+              Натисніть на будь-яку картку, щоб відкрити скан у повноекранному режимі з вільним масштабуванням (Pinch-to-Zoom).
+            </p>
+          </div>
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            <button data-gal-filter="all" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-white whitespace-nowrap transition">Усі (36)</button>
+            <button id="galBtnDvinsk" data-gal-filter="dvinsk" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Колекція I (22)</button>
+            <button id="galBtnRigaSydney" data-gal-filter="riga_sydney" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Колекція II (3)</button>
+            <button id="galBtnRudenkoMonakov" data-gal-filter="rudenko_monakov" class="gal-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap transition">Колекція III (11)</button>
+          </div>
+        </div>
+
+        <div id="archiveGalleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: PRUSSIAN LEGEND & RESEARCH DIRECTIONS ==================== -->
+    <section id="view-mystery" class="hidden flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:px-6 space-y-6">
+      <!-- Part 1: 4 Steps of the Family Legend -->
+      <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200/80">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">Родинний переказ та документи</span>
+        <h2 id="mysteryMainTitle" class="text-xl sm:text-2xl font-bold font-serif-editorial text-slate-900 mt-2">
+          Документальна реконструкція родинних переказів
+        </h2>
+        <p id="mysteryMainSubtitle" class="text-xs sm:text-sm text-slate-600 mt-1">
+          Історичні свідчення, сімейні схеми та архівні світлини:
+        </p>
+
+        <div id="gerlachStepsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5"></div>
+
+        <h3 id="mysteryCandTitle" class="text-base sm:text-lg font-bold font-serif-editorial text-slate-900 mt-7 mb-3">
+          Історичні кандидати та архівні паралелі
+        </h3>
+        <div id="gerlachCandidatesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Part 2: Read-Only Research Directions & Open Mysteries -->
+      <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-slate-200/80">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-50 border border-sky-200/60 px-2.5 py-1 rounded-lg">Напрямки подальших пошуків</span>
+          <h3 class="text-lg sm:text-xl font-bold font-serif-editorial text-slate-900 mt-1.5">
+            Що ще можна знайти в архівах та сімейних альбомах
+          </h3>
+          <p id="mysteryDirSubtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Ключові зачіпки для подальшого розширення дерева роду.
+          </p>
+        </div>
+
+        <div id="researchDirectionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MOBILE BOTTOM NAVIGATION BAR (APPLE STYLE) ==================== -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 px-2 py-1 flex items-center justify-around shadow-lg" aria-label="Мобільна навігація">
+    <button data-nav-tab="tree" class="nav-tab-mobile flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-amber-600 font-semibold transition">
+      <i data-lucide="git-fork" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Дерево</span>
+    </button>
+    <button data-nav-tab="timeline" class="nav-tab-mobile flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 font-medium transition">
+      <i data-lucide="clock" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Таймлайн</span>
+    </button>
+    <button data-nav-tab="map" class="nav-tab-mobile flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 font-medium transition">
+      <i data-lucide="map-pin" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Карта</span>
+    </button>
+    <button data-nav-tab="archive" class="nav-tab-mobile flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 font-medium transition">
+      <i data-lucide="images" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Архів</span>
+    </button>
+    <button data-nav-tab="mystery" class="nav-tab-mobile flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 font-medium transition">
+      <i data-lucide="book-open" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Історія</span>
+    </button>
+  </nav>
+
+  <!-- ==================== FULLSCREEN ZOOMABLE LIGHTBOX MODAL ==================== -->
+  <div id="docLightboxModal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-md flex flex-col justify-between p-2 sm:p-4 select-none">
+    <div class="flex items-center justify-between gap-2 text-white max-w-6xl w-full mx-auto bg-slate-900/90 border border-slate-800/90 rounded-xl px-2.5 py-1.5 z-10">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span id="lightboxBadge" class="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">Архів</span>
+        <h3 id="lightboxTitle" class="text-xs sm:text-sm font-semibold text-white truncate">Документ</h3>
+      </div>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button id="lbToggleCaptionBtn" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-[11px] font-semibold transition">📋 Опис</button>
+        <button id="lbZoomResetBtn" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition">100%</button>
+        <button id="lightboxCloseBtn" type="button" aria-label="Закрити" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition flex items-center">
+          <span>✕</span><span class="hidden sm:inline ml-1">Закрити</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="lightboxViewport" class="flex-1 flex items-center justify-center overflow-hidden my-1.5 cursor-grab active:cursor-grabbing">
+      <img id="lightboxImg" src="" alt="Архівний скан" class="max-h-[64dvh] sm:max-h-[70dvh] max-w-full object-contain rounded-lg shadow-2xl" />
+    </div>
+
+    <div id="lightboxCaption" class="text-left text-xs text-slate-200 max-w-5xl w-full mx-auto bg-slate-900/95 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border border-slate-800 z-10 leading-relaxed max-h-[34dvh] overflow-y-auto space-y-2"></div>
+  </div>
+
+  <script src="js/data.enc.js?v=27"></script>
+  <script src="js/app.js?v=27"></script>
+</body>
+</html>

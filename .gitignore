@@ -1,0 +1,12 @@
+.DS_Store
+**/.DS_Store
+node_modules/
+AGENTS.md
+CLAUDE.md
+SECURITY_AUDIT*.md
+js/data.js
+scripts/
+.family_pin
+.env
+*.bak
+assets_raw/
