@@ -968,10 +968,9 @@ function ensureLeafletMapCreated() {
     scrollWheelZoom: true
   }).setView([52.2, 26.5], 5);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    subdomains: "abcd",
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    attribution: "&copy; OpenStreetMap contributors"
   }).addTo(leafletMap);
 }
 
